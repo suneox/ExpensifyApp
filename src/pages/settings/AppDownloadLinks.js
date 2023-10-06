@@ -65,7 +65,25 @@ function AppDownloadLinksPage(props) {
                     <MenuItem
                         key={item.translationKey}
                         onPress={() => item.action()}
-                        onSecondaryInteraction={(e) => ReportActionContextMenu.showContextMenu(CONTEXT_MENU_TYPES.LINK, e, item.link, popoverAnchor)}
+                        onSecondaryInteraction={(e) =>
+                            ReportActionContextMenu.showContextMenu(
+                                CONTEXT_MENU_TYPES.LINK,
+                                e,
+                                item.link,
+                                popoverAnchor,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                false
+                            )
+                        }
                         onKeyDown={(event) => {
                             event.target.blur();
                         }}

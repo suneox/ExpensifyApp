@@ -150,9 +150,11 @@ export default [
         successTextTranslateKey: 'reportActionContextMenu.copied',
         successIcon: Expensicons.Checkmark,
         shouldShow: (type) => type === CONTEXT_MENU_TYPES.LINK,
-        onPress: (closePopover, {selection}) => {
+        onPress: (closePopover, {selection, isFocusComposeAfterSelect}) => {
+            console.log(`___________ isFocusComposeAfterSelect ___________`, isFocusComposeAfterSelect);
             Clipboard.setString(selection);
             hideContextMenu(true, ReportActionComposeFocusManager.focus);
+            // hideContextMenu(true, isFocusComposeAfterSelect ? ReportActionComposeFocusManager.focus : undefined);
         },
         getDescription: (selection) => selection,
     },
@@ -163,9 +165,10 @@ export default [
         successTextTranslateKey: 'reportActionContextMenu.copied',
         successIcon: Expensicons.Checkmark,
         shouldShow: (type) => type === CONTEXT_MENU_TYPES.EMAIL,
-        onPress: (closePopover, {selection}) => {
+        onPress: (closePopover, {selection, isFocusComposeAfterSelect}) => {
             Clipboard.setString(selection.replace('mailto:', ''));
             hideContextMenu(true, ReportActionComposeFocusManager.focus);
+            // hideContextMenu(true, isFocusComposeAfterSelect ? ReportActionComposeFocusManager.focus : undefined);
         },
         getDescription: (selection) => selection.replace('mailto:', ''),
     },
@@ -250,10 +253,10 @@ export default [
         successIcon: Expensicons.Checkmark,
         shouldShow: (type, reportAction, isArchivedRoom, betas, anchor, isChronosReport, reportID, isPinnedChat, isUnreadChat) =>
             type === CONTEXT_MENU_TYPES.REPORT_ACTION || (type === CONTEXT_MENU_TYPES.REPORT && !isUnreadChat),
-        onPress: (closePopover, {reportAction, reportID}) => {
+        onPress: (closePopover, {reportAction, reportID, isFocusComposeAfterSelect}) => {
             Report.markCommentAsUnread(reportID, reportAction.created);
             if (closePopover) {
-                hideContextMenu(true, ReportActionComposeFocusManager.focus);
+                hideContextMenu(true, isFocusComposeAfterSelect ? ReportActionComposeFocusManager.focus : undefined);
             }
         },
         getDescription: () => {},
@@ -265,10 +268,10 @@ export default [
         icon: Expensicons.Mail,
         successIcon: Expensicons.Checkmark,
         shouldShow: (type, reportAction, isArchivedRoom, betas, anchor, isChronosReport, reportID, isPinnedChat, isUnreadChat) => type === CONTEXT_MENU_TYPES.REPORT && isUnreadChat,
-        onPress: (closePopover, {reportID}) => {
+        onPress: (closePopover, {reportID, isFocusComposeAfterSelect}) => {
             Report.readNewestAction(reportID);
             if (closePopover) {
-                hideContextMenu(true, ReportActionComposeFocusManager.focus);
+                hideContextMenu(true, isFocusComposeAfterSelect ? ReportActionComposeFocusManager.focus : undefined);
             }
         },
         getDescription: () => {},

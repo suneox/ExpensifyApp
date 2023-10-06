@@ -131,6 +131,7 @@ function OptionRowLHN(props) {
             false,
             optionItem.isPinned,
             optionItem.isUnread,
+            false
         );
     };
 

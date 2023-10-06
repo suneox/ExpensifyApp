@@ -48,6 +48,7 @@ function hideContextMenu(shouldDelay, onHideCallback = () => {}) {
  * @param {Boolean} isChronosReport - Flag to check if the chat participant is Chronos
  * @param {Boolean} isPinnedChat - Flag to check if the chat is pinned in the LHN. Used for the Pin/Unpin action
  * @param {Boolean} isUnreadChat - Flag to check if the chat has unread messages in the LHN. Used for the Mark as Read/Unread action
+ * @param {Boolean} isFocusCompose - Flag to check auto focus compose after action press
  */
 function showContextMenu(
     type,
@@ -64,6 +65,7 @@ function showContextMenu(
     isChronosReport = false,
     isPinnedChat = false,
     isUnreadChat = false,
+    isFocusCompose = true,
 ) {
     if (!contextMenuRef.current) {
         return;
@@ -90,6 +92,7 @@ function showContextMenu(
         isChronosReport,
         isPinnedChat,
         isUnreadChat,
+        isFocusCompose,
     );
 }
 

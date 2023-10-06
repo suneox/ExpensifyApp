@@ -34,7 +34,7 @@ const propTypes = {
     isArchivedRoom: PropTypes.bool,
 
     contentRef: PropTypes.oneOfType([PropTypes.node, PropTypes.object, PropTypes.func]),
-
+    isFocusComposeAfterSelect: PropTypes.bool,
     ...genericReportActionContextMenuPropTypes,
     ...withLocalizePropTypes,
     ...windowDimensionsPropTypes,
@@ -139,6 +139,7 @@ function BaseReportActionContextMenu(props) {
                         reportID: props.reportID,
                         draftMessage: props.draftMessage,
                         selection: props.selection,
+                        isFocusComposeAfterSelect: props.isFocusComposeAfterSelect,
                         close: () => setShouldKeepOpen(false),
                         openContextMenu: () => setShouldKeepOpen(true),
                         interceptAnonymousUser,

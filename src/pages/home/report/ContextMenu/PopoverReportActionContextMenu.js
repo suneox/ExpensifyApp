@@ -39,6 +39,7 @@ function PopoverReportActionContextMenu(_props, ref) {
     const [isRoomArchived, setIsRoomArchived] = useState(false);
     const [isChronosReportEnabled, setIsChronosReportEnabled] = useState(false);
     const [isChatPinned, setIsChatPinned] = useState(false);
+    const [isFocusComposeAfterSelect, setIsFocusComposeAfterSelect] = useState(false);
     const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
     const contentRef = useRef(null);
@@ -134,6 +135,7 @@ function PopoverReportActionContextMenu(_props, ref) {
      * @param {Boolean} isChronosReport - Flag to check if the chat participant is Chronos
      * @param {Boolean} isPinnedChat - Flag to check if the chat is pinned in the LHN. Used for the Pin/Unpin action
      * @param {Boolean} isUnreadChat - Flag to check if the chat is unread in the LHN. Used for the Mark as Read/Unread action
+     * @param {Boolean} isFocusCompose - Flag to check auto focus compose after action press
      */
     const showContextMenu = (
         type,
@@ -150,6 +152,7 @@ function PopoverReportActionContextMenu(_props, ref) {
         isChronosReport = false,
         isPinnedChat = false,
         isUnreadChat = false,
+        isFocusCompose = true,
     ) => {
         const nativeEvent = event.nativeEvent || {};
         contextMenuAnchorRef.current = contextMenuAnchor;
@@ -181,6 +184,7 @@ function PopoverReportActionContextMenu(_props, ref) {
             setIsChronosReportEnabled(isChronosReport);
             setIsChatPinned(isPinnedChat);
             setHasUnreadMessages(isUnreadChat);
+            setIsFocusComposeAfterSelect(isFocusCompose);
         });
     };
 
@@ -248,6 +252,7 @@ function PopoverReportActionContextMenu(_props, ref) {
         setIsChronosReportEnabled(false);
         setIsChatPinned(false);
         setHasUnreadMessages(false);
+        setIsFocusComposeAfterSelect(false);
     };
 
     /**
@@ -310,6 +315,7 @@ function PopoverReportActionContextMenu(_props, ref) {
                     isChronosReport={isChronosReportEnabled}
                     isPinnedChat={isChatPinned}
                     isUnreadChat={hasUnreadMessages}
+                    isFocusComposeAfterSelect={isFocusComposeAfterSelect}
                     anchor={contextMenuTargetNode}
                     contentRef={contentRef}
                     originalReportID={originalReportIDRef.current}
