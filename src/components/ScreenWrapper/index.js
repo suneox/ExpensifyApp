@@ -123,22 +123,25 @@ const ScreenWrapper = React.forwardRef(
                     if (includeSafeAreaPaddingBottom || (isOffline && shouldShowOfflineIndicator)) {
                         paddingStyle.paddingBottom = paddingBottom;
                     }
-
+                    const shouldHandleMobileSafariScroll = Browser.isMobileSafari() && maxHeight;
                     return (
                         <View
                             ref={ref}
-                            style={[styles.flex1, {minHeight}]}
+                            // style={[styles.flex1, {minHeight}]}
+                            style={[styles.h100, {minHeight}, shouldHandleMobileSafariScroll ? [{height: maxHeight, overscrollBehavior: 'none'}, styles.overflowAuto] : {}]}
                             // eslint-disable-next-line react/jsx-props-no-spreading
                             {...(isDevelopment ? panResponder.panHandlers : {})}
                             testID={testID}
                         >
                             <View
-                                style={[styles.flex1, paddingStyle, ...style]}
+                                // style={[styles.flex1, paddingStyle, ...style]}
+                                style={[styles.h100, paddingStyle, shouldHandleMobileSafariScroll ? [{marginTop: 1}, styles.overflowAuto, styles.overscrollBehaviorContain] : {}, ...style]}
                                 // eslint-disable-next-line react/jsx-props-no-spreading
                                 {...keyboardDissmissPanResponder.panHandlers}
                             >
                                 <KeyboardAvoidingView
-                                    style={[styles.w100, styles.h100, {maxHeight}]}
+                                    // style={[styles.w100, styles.h100, {maxHeight}]}
+                                    style={[styles.w100, styles.h100, {maxHeight}, shouldHandleMobileSafariScroll ? [styles.overflowAuto, styles.overscrollBehaviorContain] : {}]}
                                     behavior={keyboardAvoidingViewBehavior}
                                     enabled={shouldEnableKeyboardAvoidingView}
                                 >
