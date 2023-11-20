@@ -264,7 +264,14 @@ function Composer({
     const handlePastePlainText = useCallback(
         (event) => {
             const plainText = event.clipboardData.getData('text/plain');
-            paste(plainText);
+            const urlPattern = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[^\s]+)/g;
+            if (plainText.match(urlPattern).length) {
+                const parser = new ExpensiMark();
+                const parsedPlainText = parser.htmlToMarkdown(parser.replace(plainText, ['link']));
+                paste(parsedPlainText);
+            } else {
+                paste(plainText);
+            }
         },
         [paste],
     );
