@@ -19,6 +19,7 @@ import * as StyleUtils from '@styles/StyleUtils';
 import useTheme from '@styles/themes/useTheme';
 import useThemeStyles from '@styles/useThemeStyles';
 import CONST from '@src/CONST';
+import useInputHistory from '@hooks/useInputHistory';
 
 const propTypes = {
     /** Maximum number of lines in the text input */
@@ -431,6 +432,12 @@ function Composer({
 
         [numberOfLines, maxLines, styles.overflowHidden, styles.rtlTextRenderForSafari, style, isComposerFullSize],
     );
+
+    useInputHistory({
+        value,
+        textInput,
+        onChangeText: props.onChangeText,
+    });
 
     return (
         <>
