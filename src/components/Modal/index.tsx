@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import withWindowDimensions from '@components/withWindowDimensions';
 import useStyleUtils from '@hooks/useStyleUtils';
 import useTheme from '@hooks/useTheme';
@@ -23,7 +23,14 @@ function Modal({fullscreen = true, onModalHide = () => {}, type, onModalShow = (
     const hideModal = () => {
         setStatusBarColor(previousStatusBarColor);
         onModalHide();
+        if (window.history.state.isModal) {
+            window.history.back();
+        }
     };
+
+    const handlePopStateRef = useRef(() => {
+        rest.onClose();
+    });
 
     const showModal = () => {
         const statusBarColor = StatusBar.getBackgroundColor() ?? theme.appBG;
@@ -36,8 +43,16 @@ function Modal({fullscreen = true, onModalHide = () => {}, type, onModalShow = (
             setStatusBarColor(isFullScreenModal ? theme.appBG : StyleUtils.getThemeBackgroundColor(statusBarColor));
         }
 
+        window.history.pushState({isModal: true}, '', null);
+        window.addEventListener('popstate', handlePopStateRef.current);
         onModalShow?.();
     };
+
+    useEffect(() => {
+        return () => {
+            window.removeEventListener('popstate', handlePopStateRef.current);
+        };
+    }, []);
 
     return (
         <BaseModal
