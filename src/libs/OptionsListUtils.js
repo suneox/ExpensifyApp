@@ -749,11 +749,36 @@ function sortCategories(categories) {
  * @returns {Array<Object>}
  */
 function sortTags(tags) {
-    const sortedTags = _.chain(tags)
-        .values()
-        .sortBy((tag) => tag.name)
-        .value();
+    const getType = (str) => {
+        if (/^[^a-zA-Z0-9_]/.test(str)) {
+            return 0;
+        } // Start with special character
+        if (/^\d+$/.test(str)) {
+            return 1;
+        } // Only Number
+        return 2; // Word
+    };
+    const sortedTags = tags.sort((a, b) => {
+        const typeA = getType(a.name);
+        const typeB = getType(b.name);
 
+        if (typeA !== typeB) {
+            return typeA - typeB; // Sort by type first
+        }
+
+        if (typeA === 0) {
+            // If both are special characters, sort alphabetically
+            return a.name - b.name;
+        }
+
+        if (typeA === 1) {
+            // If both are numbers, compare as numbers
+            return Number(a.name) - Number(b.name);
+        }
+
+        // If the types are the same and not numbers, perform a regular string comparison
+        return a.name.localeCompare(b.name);
+    });
     return sortedTags;
 }
 
