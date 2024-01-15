@@ -25,6 +25,7 @@ function dismissModal(targetReportID: string, navigationRef: NavigationContainer
 
     const state = navigationRef.getState();
     const lastRoute = state.routes.at(-1);
+    console.log(`___________ lastRoute ___________`,lastRoute)
     switch (lastRoute?.name) {
         case NAVIGATORS.LEFT_MODAL_NAVIGATOR:
         case NAVIGATORS.RIGHT_MODAL_NAVIGATOR:
@@ -35,16 +36,19 @@ function dismissModal(targetReportID: string, navigationRef: NavigationContainer
                 const reportState = getStateFromPath(ROUTES.REPORT_WITH_ID.getRoute(targetReportID));
 
                 const action: StackNavigationAction = getActionFromState(reportState, linkingConfig.config);
+                console.log(`___________ dismissModal:case-1 ___________`,)
                 if (action) {
                     action.type = 'REPLACE';
                     navigationRef.dispatch(action);
                 }
                 // If not-found page is in the route stack, we need to close it
             } else if (targetReportID && state.routes.some((route) => route.name === SCREENS.NOT_FOUND)) {
+                console.log(`___________ dismissModal:case-2 ___________`,)
                 const lastRouteIndex = state.routes.length - 1;
                 const centralRouteIndex = findLastIndex(state.routes, (route) => route.name === NAVIGATORS.CENTRAL_PANE_NAVIGATOR);
                 navigationRef.dispatch({...StackActions.pop(lastRouteIndex - centralRouteIndex), target: state.key});
             } else {
+                console.log(`___________ dismissModal:case-3 ___________`,)
                 navigationRef.dispatch({...StackActions.pop(), target: state.key});
             }
             break;

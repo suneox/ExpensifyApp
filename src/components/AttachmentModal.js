@@ -17,7 +17,7 @@ import addEncryptedAuthTokenToURL from '@libs/addEncryptedAuthTokenToURL';
 import compose from '@libs/compose';
 import fileDownload from '@libs/fileDownload';
 import * as FileUtils from '@libs/fileDownload/FileUtils';
-import Navigation from '@libs/Navigation/Navigation';
+import Navigation, { navigationRef } from '@libs/Navigation/Navigation';
 import * as ReportActionsUtils from '@libs/ReportActionsUtils';
 import * as TransactionUtils from '@libs/TransactionUtils';
 import useNativeDriver from '@libs/useNativeDriver';
@@ -453,7 +453,15 @@ function AttachmentModal(props) {
                         onDownloadButtonPress={() => downloadAttachment(source)}
                         shouldShowCloseButton={!props.isSmallScreenWidth}
                         shouldShowBackButton={props.isSmallScreenWidth}
-                        onBackButtonPress={closeModal}
+                        // onBackButtonPress={closeModal}
+                        onBackButtonPress={() => {
+                            console.log(`___________ onBackButtonPress ___________`,navigationRef.getState().index);
+                            if(navigationRef.getState().index === 1 && props.report.reportID) {
+                                Navigation.navigate(ROUTES.REPORT_WITH_ID.getRoute(props.report.reportID), CONST.NAVIGATION.TYPE.FORCED_UP);
+                            } else {
+                                closeModal();
+                            }
+                        }}
                         onCloseButtonPress={closeModal}
                         shouldShowThreeDotsButton={shouldShowThreeDotsButton}
                         threeDotsAnchorPosition={styles.threeDotsPopoverOffsetAttachmentModal(windowWidth)}

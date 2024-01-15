@@ -107,6 +107,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
 
     if (action && 'payload' in action && action.payload && 'name' in action.payload && isModalNavigator(action.payload.name)) {
         const minimalAction = getMinimalAction(action, navigation.getRootState());
+        console.log(`___________  ___________`, { minimalAction })
         if (minimalAction) {
             // There are situations where a route already exists on the current navigation stack
             // But we want to push the same route instead of going back in the stack
@@ -118,7 +119,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
             return;
         }
     }
-
+    console.log(`___________ action ___________`, action, state)
     if (action !== undefined) {
         root.dispatch(action);
     } else {
