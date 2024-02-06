@@ -67,6 +67,7 @@ type PopoverMenuProps = Partial<PopoverModalProps> & {
 
     /** The horizontal and vertical anchors points for the popover */
     anchorPosition: AnchorPosition;
+    verticalShift?: number;
 
     /** Ref of the anchor */
     anchorRef: RefObject<HTMLDivElement>;
@@ -103,6 +104,7 @@ function PopoverMenu({
     disableAnimation = true,
     withoutOverlay = false,
     shouldSetModalVisibility = true,
+    verticalShift = 0,
 }: PopoverMenuProps) {
     const styles = useThemeStyles();
     const {isSmallScreenWidth} = useWindowDimensions();
@@ -138,6 +140,7 @@ function PopoverMenu({
     return (
         <PopoverWithMeasuredContent
             anchorPosition={anchorPosition}
+            verticalShift={verticalShift}
             anchorRef={anchorRef}
             anchorAlignment={anchorAlignment}
             onClose={onClose}

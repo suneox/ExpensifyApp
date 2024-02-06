@@ -316,6 +316,8 @@ function AvatarWithImagePicker({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isMenuVisible, windowWidth]);
 
+    console.log(styles.mh5.marginHorizontal + styles.textHeadline.lineHeight);
+
     return (
         <View style={StyleSheet.flatten([styles.alignItemsCenter, style])}>
             <View style={[styles.pRelative, avatarStyle]}>
@@ -408,6 +410,7 @@ function AvatarWithImagePicker({
                                         }}
                                         menuItems={menuItems}
                                         anchorPosition={popoverPosition}
+                                        verticalShift={40}
                                         anchorAlignment={{horizontal: CONST.MODAL.ANCHOR_ORIGIN_HORIZONTAL.LEFT, vertical: CONST.MODAL.ANCHOR_ORIGIN_VERTICAL.TOP}}
                                         withoutOverlay
                                         anchorRef={anchorRef}
