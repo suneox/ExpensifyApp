@@ -347,6 +347,17 @@ function getOptionData({
 
     let lastMessageText = lastMessageTextFromReport;
 
+    const mentionRegex = /[^@\s]+@[^@\s]+\.[^@\s]+/g;
+    const matchedEmail = lastMessageText.match(mentionRegex);
+    if (matchedEmail && matchedEmail.length > 0) {
+        matchedEmail.forEach((email) => {
+            const pDetail = UserUtils.getPersonalDetailByEmail(email);
+            if (pDetail?.displayName) {
+                lastMessageText = lastMessageText.replace(email, pDetail.displayName);
+            }
+        });
+    }
+
     const reportAction = lastReportActions?.[report.reportID];
 
     const isThreadMessage =

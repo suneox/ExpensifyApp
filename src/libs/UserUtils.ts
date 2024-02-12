@@ -7,7 +7,7 @@ import * as defaultAvatars from '@components/Icon/DefaultAvatars';
 import {ConciergeAvatar, FallbackAvatar} from '@components/Icon/Expensicons';
 import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
-import type {PersonalDetailsList} from '@src/types/onyx';
+import type {PersonalDetails, PersonalDetailsList} from '@src/types/onyx';
 import type Login from '@src/types/onyx/Login';
 import type IconAsset from '@src/types/utils/IconAsset';
 import hashCode from './hashCode';
@@ -134,6 +134,10 @@ function getDefaultAvatarURL(accountID: string | number = ''): string {
     return `${CONST.CLOUDFRONT_URL}/images/avatars/${avatarPrefix}_${accountIDHashBucket}.png`;
 }
 
+function getPersonalDetailByEmail(email?: string): PersonalDetails | undefined | null {
+    return Object.values(allPersonalDetails ?? {}).find((personalDetails) => personalDetails?.login === email);
+}
+
 /**
  * Given a user's avatar path, returns true if user doesn't have an avatar or if URL points to a default avatar
  * @param avatarSource - the avatar source from user's personalDetails
@@ -237,5 +241,6 @@ export {
     hasLoginListInfo,
     hashText,
     isDefaultAvatar,
+    getPersonalDetailByEmail,
 };
 export type {AvatarSource};
