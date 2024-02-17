@@ -612,6 +612,12 @@ function subscribeToUserEvents() {
 
     // Handles Onyx updates coming from Pusher through the mega multipleEvents.
     PusherUtils.subscribeToMultiEvent(Pusher.TYPE.MULTIPLE_EVENT_TYPE.ONYX_API_UPDATE, (pushJSON: OnyxServerUpdate[]) => {
+        console.log(`___________ PushJSON ___________`, pushJSON);
+        const onyxCloseAccount = pushJSON.find((update) => update.key === ONYXKEYS.FORMS.CLOSE_ACCOUNT_FORM);
+        if (onyxCloseAccount) {
+            Session.signOutAndRedirectToSignIn();
+            return Onyx.update([onyxCloseAccount]);
+        }
         playSoundForMessageType(pushJSON);
 
         return SequentialQueue.getCurrentRequest().then(() => {
