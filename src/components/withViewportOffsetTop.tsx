@@ -1,5 +1,5 @@
-import type {ComponentType, ForwardedRef, RefAttributes} from 'react';
-import React, {forwardRef, useEffect, useState} from 'react';
+import type { ComponentType, ForwardedRef, RefAttributes } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import getComponentDisplayName from '@libs/getComponentDisplayName';
 import addViewportResizeListener from '@libs/VisualViewport';
 
@@ -12,7 +12,6 @@ type ViewportOffsetTopProps = {
 export default function withViewportOffsetTop<TProps extends ViewportOffsetTopProps, TRef>(WrappedComponent: ComponentType<TProps & RefAttributes<TRef>>) {
     function WithViewportOffsetTop(props: Omit<TProps, keyof ViewportOffsetTopProps>, ref: ForwardedRef<TRef>) {
         const [viewportOffsetTop, setViewportOffsetTop] = useState(0);
-
         useEffect(() => {
             const updateDimensions = (event: Event) => {
                 const targetOffsetTop = (event.target instanceof VisualViewport && event.target.offsetTop) || 0;

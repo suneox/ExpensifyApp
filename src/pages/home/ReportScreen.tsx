@@ -25,6 +25,7 @@ import useAppFocusEvent from '@hooks/useAppFocusEvent';
 import useLocalize from '@hooks/useLocalize';
 import usePrevious from '@hooks/usePrevious';
 import useThemeStyles from '@hooks/useThemeStyles';
+import useViewportOffsetTop from '@hooks/useViewportOffsetTop';
 import useWindowDimensions from '@hooks/useWindowDimensions';
 import Timing from '@libs/actions/Timing';
 import Navigation from '@libs/Navigation/Navigation';
@@ -51,6 +52,10 @@ import {ActionListContext, ReactionListContext} from './ReportScreenContext';
 import type {ActionListContextType, ReactionListRef, ScrollPosition} from './ReportScreenContext';
 
 type ReportScreenOnyxProps = {
+    /** Indicates if there is a modal currently visible or not */
+    modal: {
+        isPopover: boolean,
+    },
     /** Tells us if the sidebar has rendered */
     isSidebarLoaded: OnyxEntry<boolean>;
 
@@ -113,7 +118,7 @@ function ReportScreen({
     markReadyForHydration,
     policies = {},
     isSidebarLoaded = false,
-    viewportOffsetTop,
+    modal,
     isComposerFullSize = false,
     userLeavingStatus = false,
     currentReportID = '',
@@ -223,6 +228,8 @@ function ReportScreen({
         Timing.start(CONST.TIMING.CHAT_RENDER);
         Performance.markStart(CONST.TIMING.CHAT_RENDER);
     }
+    const [isComposerFocus, setIsComposerFocus] = useState(false);
+    const viewportOffsetTop = useViewportOffsetTop(isComposerFocus && !modal.isPopover);
 
     const reportID = getReportID(route);
     const {reportPendingAction, reportErrors} = ReportUtils.getReportOfflinePendingActionAndErrors(report);
@@ -536,6 +543,8 @@ function ReportScreen({
 
                                 {isReportReadyForDisplay ? (
                                     <ReportFooter
+                                        onComposerFocus={() => setIsComposerFocus(true)}
+                                        onComposerBlur={() => setIsComposerFocus(false)}
                                         report={report}
                                         pendingAction={reportPendingAction}
                                         isComposerFullSize={!!isComposerFullSize}
@@ -561,6 +570,9 @@ export default withViewportOffsetTop(
             {
                 isSidebarLoaded: {
                     key: ONYXKEYS.IS_SIDEBAR_LOADED,
+                },
+                modal: {
+                    key: ONYXKEYS.MODAL,
                 },
                 reportActions: {
                     key: ({route}) => `${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${getReportID(route)}`,
