@@ -261,7 +261,7 @@ function ReportScreen({
 
     const reportID = getReportID(route);
     const {reportPendingAction, reportErrors} = ReportUtils.getReportOfflinePendingActionAndErrors(report);
-    const screenWrapperStyle = [styles.appContent, styles.flex1, {marginTop: viewportOffsetTop}];
+    const screenWrapperStyle = [styles.appContent, styles.flex1];
     const isEmptyChat = useMemo(() => _.isEmpty(reportActions), [reportActions]);
     // There are no reportActions at all to display and we are still in the process of loading the next set of actions.
     const isLoadingInitialReportActions = _.isEmpty(reportActions) && reportMetadata.isLoadingInitialReportActions;
@@ -515,6 +515,7 @@ function ReportScreen({
                     navigation={navigation}
                     style={screenWrapperStyle}
                     shouldEnableKeyboardAvoidingView={isTopMostReportId}
+                    shouldEnableMaxHeight
                     testID={ReportScreen.displayName}
                 >
                     <FullPageNotFoundView
