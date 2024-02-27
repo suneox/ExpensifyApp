@@ -15,7 +15,6 @@ import ReportActionsSkeletonView from '@components/ReportActionsSkeletonView';
 import ScreenWrapper from '@components/ScreenWrapper';
 import TaskHeaderActionButton from '@components/TaskHeaderActionButton';
 import withCurrentReportID, {withCurrentReportIDDefaultProps, withCurrentReportIDPropTypes} from '@components/withCurrentReportID';
-import withViewportOffsetTop from '@components/withViewportOffsetTop';
 import useAppFocusEvent from '@hooks/useAppFocusEvent';
 import useLocalize from '@hooks/useLocalize';
 import usePrevious from '@hooks/usePrevious';
@@ -37,6 +36,7 @@ import * as Report from '@userActions/Report';
 import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
 import ROUTES from '@src/ROUTES';
+import useViewportOffsetTop from '@hooks/useViewportOffsetTop';
 import HeaderView from './HeaderView';
 import reportActionPropTypes from './report/reportActionPropTypes';
 import ReportActionsView from './report/ReportActionsView';
@@ -44,6 +44,10 @@ import ReportFooter from './report/ReportFooter';
 import {ActionListContext, ReactionListContext} from './ReportScreenContext';
 
 const propTypes = {
+    modal: PropTypes.shape({
+        /** Indicates if there is a modal currently visible or not */
+        isPopover: PropTypes.bool,
+    }),
     /** Navigation route context info provided by react navigation */
     route: PropTypes.shape({
         /** Route specific parameters used on this screen */
@@ -97,7 +101,6 @@ const propTypes = {
     /** Whether user is leaving the current report */
     userLeavingStatus: PropTypes.bool,
 
-    viewportOffsetTop: PropTypes.number.isRequired,
     ...withCurrentReportIDPropTypes,
 };
 
@@ -148,12 +151,12 @@ function ReportScreen({
     markReadyForHydration,
     policies,
     isSidebarLoaded,
-    viewportOffsetTop,
     isComposerFullSize,
     errors,
     userLeavingStatus,
     currentReportID,
     navigation,
+    modal,
 }) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
@@ -258,6 +261,7 @@ function ReportScreen({
         Timing.start(CONST.TIMING.CHAT_RENDER);
         Performance.markStart(CONST.TIMING.CHAT_RENDER);
     }
+    const viewportOffsetTop = useViewportOffsetTop(!modal.isPopover);
 
     const reportID = getReportID(route);
     const {reportPendingAction, reportErrors} = ReportUtils.getReportOfflinePendingActionAndErrors(report);
@@ -600,12 +604,14 @@ ReportScreen.defaultProps = defaultProps;
 ReportScreen.displayName = 'ReportScreen';
 
 export default compose(
-    withViewportOffsetTop,
     withCurrentReportID,
     withOnyx(
         {
             isSidebarLoaded: {
                 key: ONYXKEYS.IS_SIDEBAR_LOADED,
+            },
+            modal: {
+                key: ONYXKEYS.MODAL,
             },
             reportActions: {
                 key: ({route}) => `${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${getReportID(route)}`,
@@ -671,7 +677,7 @@ export default compose(
             prevProps.accountManagerReportID === nextProps.accountManagerReportID &&
             prevProps.userLeavingStatus === nextProps.userLeavingStatus &&
             prevProps.currentReportID === nextProps.currentReportID &&
-            prevProps.viewportOffsetTop === nextProps.viewportOffsetTop &&
+            _.isEqual(prevProps.modal.isPopover, nextProps.modal.isPopover) &&
             _.isEqual(prevProps.parentReportAction, nextProps.parentReportAction) &&
             _.isEqual(prevProps.report, nextProps.report),
     ),
