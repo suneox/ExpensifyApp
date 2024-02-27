@@ -45,7 +45,7 @@ function PopoverWithMeasuredContent({
     ...props
 }: PopoverWithMeasuredContentProps) {
     const styles = useThemeStyles();
-    const {windowWidth, windowHeight} = useWindowDimensions();
+    const {windowWidth, windowHeight} = useWindowDimensions(true);
     const [popoverWidth, setPopoverWidth] = useState(popoverDimensions.width);
     const [popoverHeight, setPopoverHeight] = useState(popoverDimensions.height);
     const [isContentMeasured, setIsContentMeasured] = useState(popoverWidth > 0 && popoverHeight > 0);
@@ -111,10 +111,13 @@ function PopoverWithMeasuredContent({
 
     const horizontalShift = PopoverWithMeasuredContentUtils.computeHorizontalShift(adjustedAnchorPosition.left, popoverWidth, windowWidth);
     const verticalShift = PopoverWithMeasuredContentUtils.computeVerticalShift(adjustedAnchorPosition.top, popoverHeight, windowHeight);
-    const shiftedAnchorPosition = {
-        left: adjustedAnchorPosition.left + horizontalShift,
-        bottom: windowHeight - (adjustedAnchorPosition.top + popoverHeight) - verticalShift,
-    };
+    const shiftedAnchorPosition = useMemo(
+        () => ({
+            left: adjustedAnchorPosition.left + horizontalShift,
+            bottom: windowHeight - (adjustedAnchorPosition.top + popoverHeight) - verticalShift,
+        }),
+        [adjustedAnchorPosition.left, adjustedAnchorPosition.top, horizontalShift, popoverHeight, verticalShift, windowHeight],
+    );
     return isContentMeasured ? (
         <Popover
             popoverDimensions={popoverDimensions}
