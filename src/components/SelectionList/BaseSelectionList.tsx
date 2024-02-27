@@ -429,8 +429,9 @@ function BaseSelectionList<TItem extends ListItem>(
                         ) : (
                             <>
                                 {!headerMessage && canSelectMultiple && shouldShowSelectAll && (
+                                <View style={[styles.peopleRow, styles.userSelectNone, styles.ph4, styles.pb3, listHeaderWrapperStyle]}>
                                     <PressableWithFeedback
-                                        style={[styles.peopleRow, styles.userSelectNone, styles.ph4, styles.pb3, listHeaderWrapperStyle]}
+                                        style={[styles.flexRow, styles.alignItemsCenter]}
                                         onPress={selectAllRow}
                                         accessibilityLabel={translate('workspace.people.selectAll')}
                                         role="button"
@@ -445,12 +446,14 @@ function BaseSelectionList<TItem extends ListItem>(
                                             onPress={selectAllRow}
                                             disabled={flattenedSections.allOptions.length === flattenedSections.disabledOptionsIndexes.length}
                                         />
-                                        {customListHeader ?? (
+                                        {!customListHeader && (
                                             <View style={[styles.flex1]}>
                                                 <Text style={[styles.textStrong, styles.ph3]}>{translate('workspace.people.selectAll')}</Text>
                                             </View>
                                         )}
                                     </PressableWithFeedback>
+                                    {customListHeader}
+                                </View>
                                 )}
                                 {!headerMessage && !canSelectMultiple && customListHeader}
                                 <SectionList

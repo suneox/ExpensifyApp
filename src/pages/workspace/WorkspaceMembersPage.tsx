@@ -463,7 +463,7 @@ function WorkspaceMembersPage({policyMembers, personalDetails, route, policy, se
                         showScrollIndicator
                         shouldPreventDefaultFocusOnSelectRow={!DeviceCapabilities.canUseTouchScreen()}
                         ref={textInputRef}
-                        customListHeader={getCustomListHeader()}
+                        // customListHeader={getCustomListHeader()}
                         listHeaderWrapperStyle={[styles.ph9, styles.pv3, styles.pb5]}
                     />
                 </View>
