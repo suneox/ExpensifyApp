@@ -35,7 +35,7 @@ const EmojiPicker = forwardRef((props, ref) => {
     const onEmojiSelected = useRef(() => {});
     const activeEmoji = useRef();
     const emojiSearchInput = useRef();
-    const {isSmallScreenWidth, windowHeight} = useWindowDimensions();
+    const {isSmallScreenWidth, windowHeight} = useWindowDimensions(true);
 
     /**
      * Get the popover anchor ref
@@ -189,7 +189,7 @@ const EmojiPicker = forwardRef((props, ref) => {
             }}
             anchorAlignment={emojiPopoverAnchorOrigin}
             outerStyle={StyleUtils.getOuterModalStyle(windowHeight, props.viewportOffsetTop)}
-            innerContainerStyle={styles.popoverInnerContainer}
+            innerContainerStyle={{...styles.popoverInnerContainer, maxHeight: `${windowHeight - 16}px`}}
             avoidKeyboard
         >
             <EmojiPickerMenu
