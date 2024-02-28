@@ -43,6 +43,12 @@ const propTypes = {
     /** A method to call when the form is submitted */
     onSubmit: PropTypes.func.isRequired,
 
+    /** A method to call when the input is focus */
+    onComposerFocus: PropTypes.func,
+
+    /** A method to call when the input is blue */
+    onComposerBlur: PropTypes.func,
+
     /** The ID of the report actions will be created for */
     reportID: PropTypes.string.isRequired,
 
@@ -84,6 +90,8 @@ const defaultProps = {
     shouldShowComposeInput: true,
     listHeight: 0,
     isReportReadyForDisplay: true,
+    onComposerFocus: () => {},
+    onComposerBlur: () => {},
     ...withCurrentUserPersonalDetailsDefaultProps,
 };
 
@@ -108,6 +116,8 @@ function ReportActionCompose({
     listHeight,
     shouldShowComposeInput,
     isReportReadyForDisplay,
+    onComposerFocus,
+    onComposerBlur
 }) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
@@ -300,8 +310,9 @@ function ReportActionCompose({
         isKeyboardVisibleWhenShowingModalRef.current = true;
     }, []);
 
-    const onBlur = useCallback((e) => {
+    const handleBlur = useCallback((e) => {
         setIsFocused(false);
+        onComposerBlur();
         if (suggestionsRef.current) {
             suggestionsRef.current.resetSuggestions();
         }
@@ -310,8 +321,9 @@ function ReportActionCompose({
         }
     }, []);
 
-    const onFocus = useCallback(() => {
+    const handleFocus = useCallback(() => {
         setIsFocused(true);
+        onComposerFocus();
     }, []);
 
     // resets the composer to normal size when
@@ -442,8 +454,8 @@ function ReportActionCompose({
                                         setIsCommentEmpty={setIsCommentEmpty}
                                         handleSendMessage={handleSendMessage}
                                         shouldShowComposeInput={shouldShowComposeInput}
-                                        onFocus={onFocus}
-                                        onBlur={onBlur}
+                                        onFocus={handleFocus}
+                                        onBlur={handleBlur}
                                         measureParentContainer={measureContainer}
                                         listHeight={listHeight}
                                         onValueChange={(value) => {

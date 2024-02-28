@@ -48,6 +48,8 @@ const propTypes = {
         /** Indicates if there is a modal currently visible or not */
         isPopover: PropTypes.bool,
     }),
+    /** Whether the compose input is shown or not */
+    shouldShowComposeInput: PropTypes.bool,
     /** Navigation route context info provided by react navigation */
     route: PropTypes.shape({
         /** Route specific parameters used on this screen */
@@ -106,6 +108,10 @@ const propTypes = {
 
 const defaultProps = {
     isSidebarLoaded: false,
+    modal: {
+        isPopover: false,
+    },
+    shouldShowComposeInput: true,
     reportActions: {},
     parentReportAction: {},
     report: {},
@@ -157,6 +163,7 @@ function ReportScreen({
     currentReportID,
     navigation,
     modal,
+    shouldShowComposeInput,
 }) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
@@ -261,7 +268,8 @@ function ReportScreen({
         Timing.start(CONST.TIMING.CHAT_RENDER);
         Performance.markStart(CONST.TIMING.CHAT_RENDER);
     }
-    const viewportOffsetTop = useViewportOffsetTop(!modal.isPopover);
+    const [isComposerFocus, setIsComposerFocus] = useState(false);
+    const viewportOffsetTop = useViewportOffsetTop(isComposerFocus && !modal.isPopover);
 
     const reportID = getReportID(route);
     const {reportPendingAction, reportErrors} = ReportUtils.getReportOfflinePendingActionAndErrors(report);
@@ -580,6 +588,8 @@ function ReportScreen({
 
                                 {isReportReadyForDisplay ? (
                                     <ReportFooter
+                                        onComposerFocus={() => setIsComposerFocus(true)}
+                                        onComposerBlur={() => setIsComposerFocus(false)}
                                         report={report}
                                         pendingAction={reportPendingAction}
                                         isComposerFullSize={isComposerFullSize}
@@ -612,6 +622,10 @@ export default compose(
             },
             modal: {
                 key: ONYXKEYS.MODAL,
+            },
+            shouldShowComposeInput: {
+                key: ONYXKEYS.SHOULD_SHOW_COMPOSE_INPUT,
+                initialValue: false,
             },
             reportActions: {
                 key: ({route}) => `${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${getReportID(route)}`,
@@ -677,7 +691,8 @@ export default compose(
             prevProps.accountManagerReportID === nextProps.accountManagerReportID &&
             prevProps.userLeavingStatus === nextProps.userLeavingStatus &&
             prevProps.currentReportID === nextProps.currentReportID &&
-            _.isEqual(prevProps.modal.isPopover, nextProps.modal.isPopover) &&
+            prevProps.shouldShowComposeInput === nextProps.shouldShowComposeInput &&
+            prevProps.modal.isPopover === nextProps.modal.isPopover &&
             _.isEqual(prevProps.parentReportAction, nextProps.parentReportAction) &&
             _.isEqual(prevProps.report, nextProps.report),
     ),

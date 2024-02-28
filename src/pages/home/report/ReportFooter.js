@@ -43,6 +43,12 @@ const propTypes = {
     /** Whether to show the compose input */
     shouldShowComposeInput: PropTypes.bool,
 
+        /** A method to call when the input is focus */
+    onComposerFocus: PropTypes.func,
+
+    /** A method to call when the input is blue */
+    onComposerBlur: PropTypes.func,
+
     ...windowDimensionsPropTypes,
 };
 
@@ -54,6 +60,8 @@ const defaultProps = {
     lastReportAction: null,
     isEmptyChat: true,
     shouldShowComposeInput: false,
+    onComposerFocus: () => {},
+    onComposerBlur: () => {},
 };
 
 function ReportFooter(props) {
@@ -133,6 +141,8 @@ function ReportFooter(props) {
                     <SwipeableView onSwipeDown={Keyboard.dismiss}>
                         <ReportActionCompose
                             onSubmit={onSubmitComment}
+                            onComposerFocus={props.onComposerFocus}
+                            onComposerBlur={props.onComposerBlur}
                             reportID={props.report.reportID}
                             report={props.report}
                             isEmptyChat={props.isEmptyChat}
