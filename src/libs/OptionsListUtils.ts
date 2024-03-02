@@ -874,9 +874,25 @@ function sortTags(tags: Record<string, Tag> | Tag[]) {
     let sortedTags;
 
     if (Array.isArray(tags)) {
-        sortedTags = tags.sort((a, b) => localeCompare(a.name, b.name));
+        sortedTags = tags.sort((a, b) => {
+            const charCodeA = a.name.charCodeAt(0);
+            const charCodeB = b.name.charCodeAt(0);
+
+            if (charCodeA !== charCodeB) {
+                return charCodeA - charCodeB;
+            } 
+            return a.name.localeCompare(b.name);
+            
+        });
     } else {
-        sortedTags = Object.values(tags).sort((a, b) => localeCompare(a.name, b.name));
+        sortedTags = Object.values(tags).sort((a, b) => {
+            const charCodeA = a.name.charCodeAt(0);
+            const charCodeB = b.name.charCodeAt(0);
+            if (charCodeA !== charCodeB) {
+                return charCodeA - charCodeB;
+            }
+            return a.name.localeCompare(b.name);
+        });
     }
 
     return sortedTags;
@@ -1168,6 +1184,7 @@ function getTagListSections(tags: Tag[], recentlyUsedTags: string[], selectedOpt
  * Verifies that there is at least one enabled tag
  */
 function hasEnabledTags(policyTagList: Array<PolicyTagList[keyof PolicyTagList]>) {
+    console.log(`___________ policyTagList ___________`,policyTagList)
     const policyTagValueList = policyTagList.map(({tags}) => Object.values(tags)).flat();
 
     return hasEnabledOptions(policyTagValueList);
