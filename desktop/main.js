@@ -120,6 +120,35 @@ const quitAndInstallWithUpdate = () => {
     autoUpdater.quitAndInstall();
 };
 
+// Actual auto-update listeners
+const electronUpdater = (browserWindow) => ({
+    init: () => {
+        autoUpdater.on(ELECTRON_EVENTS.DOWNLOAD_PROGRESS, (info) => {
+            console.log(`___________ DownloadProgress ___________`, info);
+            // const {percent, total, transferred, bytesPerSecond} = info;
+            // sendToRenderer(ELECTRON_EVENTS.DOWNLOAD_PROGRESS, {percent, total, transferred, bytesPerSecond});
+        });
+        autoUpdater.on(ELECTRON_EVENTS.UPDATE_DOWNLOADED, (info) => {
+            const systemMenu = Menu.getApplicationMenu();
+            downloadedVersion = info.version;
+            systemMenu.getMenuItemById(`update`).visible = true;
+            systemMenu.getMenuItemById(`checkForUpdates`).visible = false;
+            if (browserWindow.isVisible()) {
+                browserWindow.webContents.send(ELECTRON_EVENTS.UPDATE_DOWNLOADED, info.version);
+            } else {
+                quitAndInstallWithUpdate();
+            }
+        });
+
+        ipcMain.on(ELECTRON_EVENTS.START_UPDATE, quitAndInstallWithUpdate);
+        autoUpdater.checkForUpdates();
+    },
+    update: () => {
+        console.log(`___________ CheckForUpdates ___________`);
+        autoUpdater.checkForUpdates();
+    },
+});
+
 /**
  * Menu Item callback to triggers an update check
  * @param {MenuItem} menuItem
@@ -143,6 +172,9 @@ const manuallyCheckForUpdates = (menuItem, browserWindow) => {
                     message: Localize.translate(preferredLocale, 'checkForUpdatesModal.available.title'),
                     detail: Localize.translate(preferredLocale, 'checkForUpdatesModal.available.message'),
                     buttons: [Localize.translate(preferredLocale, 'checkForUpdatesModal.available.soundsGood')],
+                }).then(() => {
+                    console.log(`___________ ManuallyCheckForUpdates ___________`);
+                    electronUpdater(browserWindow).update()
                 });
             } else if (result && result.error) {
                 dialog.showMessageBox(browserWindow, {
@@ -180,29 +212,6 @@ const showKeyboardShortcutsPage = (browserWindow) => {
     }
     browserWindow.webContents.send(ELECTRON_EVENTS.KEYBOARD_SHORTCUTS_PAGE);
 };
-
-// Actual auto-update listeners
-const electronUpdater = (browserWindow) => ({
-    init: () => {
-        autoUpdater.on(ELECTRON_EVENTS.UPDATE_DOWNLOADED, (info) => {
-            const systemMenu = Menu.getApplicationMenu();
-            downloadedVersion = info.version;
-            systemMenu.getMenuItemById(`update`).visible = true;
-            systemMenu.getMenuItemById(`checkForUpdates`).visible = false;
-            if (browserWindow.isVisible()) {
-                browserWindow.webContents.send(ELECTRON_EVENTS.UPDATE_DOWNLOADED, info.version);
-            } else {
-                quitAndInstallWithUpdate();
-            }
-        });
-
-        ipcMain.on(ELECTRON_EVENTS.START_UPDATE, quitAndInstallWithUpdate);
-        autoUpdater.checkForUpdates();
-    },
-    update: () => {
-        autoUpdater.checkForUpdates();
-    },
-});
 
 /*
  * @param {Menu} systemMenu
