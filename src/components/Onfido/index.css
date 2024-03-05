@@ -53,7 +53,11 @@
         /* This keeps the bottom of the Onfido window from being cut off on mobile web because the height was being
          set to 100%, but we have a header on the top of the page that can be used to cancel out of the flow. This
          spacing makes room for the header without cutting off the bottom of the Onfido window. */
-        height: 92% !important;
+        height: 100% !important;
+    }
+
+    .onfido-sdk-ui-DocumentAuto-footer {
+        grid-template-rows: 1fr 110px !important
     }
 
     /* 
