@@ -48,12 +48,20 @@
     margin-left: 0 !important;
 }
 
+#onfido-mount {
+    height: 100%;
+}
+#onfido-sdk {
+    min-height: initial !important;
+    max-height: initial !important; 
+}
 @media only screen and (max-width: 600px) {
-    .onfido-sdk-ui-Modal-inner {
-        /* This keeps the bottom of the Onfido window from being cut off on mobile web because the height was being
-         set to 100%, but we have a header on the top of the page that can be used to cancel out of the flow. This
-         spacing makes room for the header without cutting off the bottom of the Onfido window. */
-        height: 92% !important;
+    #onfido-sdk {
+        min-height: initial !important;
+    }
+
+    #onfido-sdk #document-root div[data-qa="overlay-idle"] {
+        grid-template-rows: 80px 0 16px 1fr 32px minmax(50px,100%) 0 !important;
     }
 
     /* 
