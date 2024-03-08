@@ -115,7 +115,7 @@ function isModalNavigator(targetNavigator?: string) {
     return targetNavigator === NAVIGATORS.LEFT_MODAL_NAVIGATOR || targetNavigator === NAVIGATORS.RIGHT_MODAL_NAVIGATOR;
 }
 
-export default function linkTo(navigation: NavigationContainerRef<RootStackParamList> | null, path: Route, type?: string, isActiveRoute?: boolean) {
+export default function linkTo(navigation: NavigationContainerRef<RootStackParamList> | null, path: Route, type?: string, isActiveRoute?: boolean, params: any) {
     if (!navigation) {
         throw new Error("Couldn't find a navigation object. Is your component inside a screen in a navigator?");
     }
@@ -170,6 +170,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
             const isNewPolicyID =
                 (topmostBottomTabRoute?.params as Record<string, string | undefined>)?.policyID !== (matchingBottomTabRoute?.params as Record<string, string | undefined>)?.policyID;
             if (topmostBottomTabRoute && (topmostBottomTabRoute.name !== matchingBottomTabRoute.name || isNewPolicyID)) {
+                console.log(`-----NAV 0::`, action?.payload);
                 root.dispatch({
                     type: CONST.NAVIGATION.ACTION_TYPE.PUSH,
                     payload: matchingBottomTabRoute,
@@ -196,6 +197,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
                 const diff = getPartialStateDiff(rootState, adaptedState as State<RootStackParamList>, metainfo);
                 const diffActions = getActionsFromPartialDiff(diff);
                 for (const diffAction of diffActions) {
+                    console.log(`-----NAV 1::`, action?.payload);
                     root.dispatch(diffAction);
                 }
             }
@@ -209,6 +211,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
                 return;
             }
 
+            console.log(`-----NAV 2::`, action?.payload);
             root.dispatch(actionForBottomTabNavigator);
 
             // If the layout is wide we need to push matching central pane route to the stack.
@@ -217,6 +220,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const matchingCentralPaneRoute = getMatchingCentralPaneRouteForState(stateFromPath, rootState)!;
                 if (matchingCentralPaneRoute && 'name' in matchingCentralPaneRoute) {
+                    console.log(`-----NAV 3::`, action?.payload);
                     root.dispatch({
                         type: CONST.NAVIGATION.ACTION_TYPE.PUSH,
                         payload: {
@@ -230,6 +234,7 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
                 }
             } else {
                 // If the layout is small we need to pop everything from the central pane so the bottom tab navigator is visible.
+                console.log(`-----NAV 4::`, action?.payload);
                 root.dispatch({
                     type: 'POP_TO_TOP',
                     target: rootState.key,
@@ -248,12 +253,16 @@ export default function linkTo(navigation: NavigationContainerRef<RootStackParam
             if (!isActiveRoute && type === CONST.NAVIGATION.ACTION_TYPE.PUSH) {
                 minimalAction.type = CONST.NAVIGATION.ACTION_TYPE.PUSH;
             }
-            root.dispatch(minimalAction);
+            console.log(`-----NAV 5::`, { minimalAction }, action?.payload);
+            const xxxx = { ...minimalAction, payload: { ...minimalAction.payload, params: { ...minimalAction.payload.params, params: { ...minimalAction.payload.params.params, params } } } };
+            console.log(`___________ xxxx ___________`,xxxx);
+            root.dispatch(xxxx);
             return;
         }
     }
 
     if (action !== undefined) {
+        console.log(`-----NAV 6::`, action?.payload);
         root.dispatch(action);
     } else {
         root.reset(stateFromPath);

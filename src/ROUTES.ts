@@ -179,7 +179,7 @@ const ROUTES = {
     REPORT: 'r',
     REPORT_WITH_ID: {
         route: 'r/:reportID?/:reportActionID?',
-        getRoute: (reportID: string) => `r/${reportID}` as const,
+        getRoute: (reportID: string) => (reportID ? `r/${reportID}` : undefined) as const,
     },
     REPORT_AVATAR: {
         route: 'r/:reportID/avatar',

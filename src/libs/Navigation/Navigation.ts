@@ -128,6 +128,7 @@ function getDistanceFromPathInRootNavigator(path?: string): number {
 /** Returns the current active route */
 function getActiveRoute(): string {
     const currentRoute = navigationRef.current && navigationRef.current.getCurrentRoute();
+    // console.log(`___________ getActiveRoute:currentRoute ___________`, currentRoute);
     if (!currentRoute?.name) {
         return '';
     }
@@ -166,7 +167,7 @@ function isActiveRoute(routePath: Route): boolean {
  * Main navigation method for redirecting to a route.
  * @param [type] - Type of action to perform. Currently UP is supported.
  */
-function navigate(route: Route = ROUTES.HOME, type?: string) {
+function navigate(route: Route = ROUTES.HOME, type?: string, params: any) {
     if (!canNavigate('navigate', {route})) {
         // Store intended route if the navigator is not yet available,
         // we will try again after the NavigationContainer is ready
@@ -174,7 +175,7 @@ function navigate(route: Route = ROUTES.HOME, type?: string) {
         pendingRoute = route;
         return;
     }
-    linkTo(navigationRef.current, route, type, isActiveRoute(route));
+    linkTo(navigationRef.current, route, type, isActiveRoute(route), params);
 }
 
 /**

@@ -11,6 +11,8 @@ import Navigation from '@libs/Navigation/Navigation';
 import CONST from '@src/CONST';
 import ROUTES from '@src/ROUTES';
 import PressableAvatarWithIndicator from './PressableAvatarWithIndicator';
+import navigationRef from '../../../libs/Navigation/navigationRef';
+import { getPathFromState } from '@react-navigation/native';
 
 const propTypes = {
     /** Whether the create menu is open or not */
@@ -36,7 +38,16 @@ function AvatarWithOptionalStatus({emojiStatus, isCreateMenuOpen}) {
         }
 
         Navigation.setShouldPopAllStateOnUP();
-        Navigation.navigate(ROUTES.SETTINGS_STATUS);
+        const activeRoute = Navigation.getActiveRoute();
+        Navigation.navigate(ROUTES.SETTINGS_STATUS, undefined, {backTo: activeRoute});
+
+        // const topmostReportId = Navigation.getTopmostReportId();
+        // Navigation.navigate(ROUTES.SETTINGS_STATUS, undefined, {backTo: ROUTES.REPORT_WITH_ID.getRoute(topmostReportId)});
+
+        // getPathFromState()
+        // const currentRoute = navigationRef.current.getCurrentRoute();
+        // console.log(`___________ currentRoute ___________`,currentRoute);
+        // Navigation.navigate(ROUTES.SETTINGS_STATUS, undefined, {backTo: currentRoute.path});
     }, [isCreateMenuOpen]);
 
     return (

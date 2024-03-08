@@ -28,6 +28,7 @@ import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
 import ROUTES from '@src/ROUTES';
 import SCREENS from '@src/SCREENS';
+import navigationRef from '../../../../libs/Navigation/navigationRef';
 
 const INPUT_IDS = {
     EMOJI_CODE: 'emojiCode',
@@ -71,15 +72,24 @@ function StatusPage({draftStatus, currentUserPersonalDetails}) {
         return DateUtils.isTimeAtLeastOneMinuteInFuture({dateTimeString: clearAfterTime});
     }, [draftClearAfter, currentUserClearAfter]);
 
-    const routesHistory = useNavigationState((state) => state.routes || []);
+    // const routesHistory = useNavigationState((state) => state.routes || []);
+    // const navState = useNavigationState((state) => state);
     const navigateBackToPreviousScreen = useCallback(() => {
-        const topmostReportId = Navigation.getTopmostReportId();
-        if (topmostReportId && routesHistory.length === 1 && !routesHistory[0].path) {
-            Navigation.navigate(ROUTES.REPORT_WITH_ID.getRoute(topmostReportId));
+        const currentRoute = navigationRef.current.getCurrentRoute();
+        console.log(`___________ currentRoute ___________`,currentRoute);
+        const backTo = currentRoute?.params?.backTo;
+        console.log(`___________ NavigateBackToPreviousScreen ___________`,backTo);
+        // const topmostReportId = Navigation.getTopmostReportId();
+        // const activeRoute = Navigation.getActiveRoute();
+        // const state = navigationRef.getState();
+        // console.log(`___________ NavigateBackToPreviousScreen ___________`, {activeRoute}, {state, navState});
+        // console.log(`___________ History ___________`,routesHistory, routesHistory[0].params)
+        if (backTo) {
+            Navigation.navigate(backTo);
         } else {
-            Navigation.goBack(ROUTES.SETTINGS_PROFILE, false, true);
+            Navigation.goBack();
         }
-    }, [routesHistory]);
+    }, []);
 
     const updateStatus = useCallback(
         ({emojiCode, statusText}) => {
