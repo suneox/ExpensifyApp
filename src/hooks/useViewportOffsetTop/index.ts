@@ -6,8 +6,8 @@ export default function useViewportOffsetTop(shouldAdjustScrollView = false): nu
     const initialHeight = useRef(window.visualViewport?.height ?? window.innerHeight).current;
     const cachedDefaultOffsetTop = useRef<number>(0);
     useEffect(() => {
-        const updateDimensions = (event: Event) => {
-            const targetOffsetTop = (event.target instanceof VisualViewport && event.target.offsetTop) || 0;
+        const updateDimensions = (event?: Event) => {
+            const targetOffsetTop = (!event ? window.visualViewport?.offsetTop :(event?.target instanceof VisualViewport && event.target.offsetTop)) || 0;
             if (shouldAdjustScrollView && window.visualViewport) {
                 const adjustScrollY = Math.round(initialHeight - window.visualViewport.height);
                 if (cachedDefaultOffsetTop.current === 0) {
@@ -25,7 +25,7 @@ export default function useViewportOffsetTop(shouldAdjustScrollView = false): nu
                 setViewportOffsetTop(targetOffsetTop);
             }
         };
-
+        updateDimensions();
         const removeViewportResizeListener = addViewportResizeListener(updateDimensions);
 
         return () => {

@@ -10,6 +10,7 @@ import useWindowDimensions from '@hooks/useWindowDimensions';
 import calculateAnchorPosition from '@libs/calculateAnchorPosition';
 import CONST from '@src/CONST';
 import EmojiPickerMenu from './EmojiPickerMenu';
+import * as Browser from '@libs/Browser';
 
 const DEFAULT_ANCHOR_ORIGIN = {
     horizontal: CONST.MODAL.ANCHOR_ORIGIN_HORIZONTAL.RIGHT,
@@ -174,7 +175,7 @@ const EmojiPicker = forwardRef((props, ref) => {
             onModalShow={focusEmojiSearchInput}
             onModalHide={onModalHide.current}
             hideModalContentWhileAnimating
-            shouldSetModalVisibility={false}
+            shouldSetModalVisibility={Browser.isMobile()}
             animationInTiming={1}
             animationOutTiming={1}
             anchorPosition={{
@@ -189,7 +190,7 @@ const EmojiPicker = forwardRef((props, ref) => {
             }}
             anchorAlignment={emojiPopoverAnchorOrigin}
             outerStyle={StyleUtils.getOuterModalStyle(windowHeight, props.viewportOffsetTop)}
-            innerContainerStyle={{...styles.popoverInnerContainer, maxHeight: `${windowHeight - 50}px`}}
+            innerContainerStyle={styles.popoverInnerContainer}
             avoidKeyboard
         >
             <EmojiPickerMenu

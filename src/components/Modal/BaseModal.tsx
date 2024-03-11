@@ -62,6 +62,7 @@ function BaseModal(
     const hideModal = useCallback(
         (callHideCallback = true) => {
             Modal.willAlertModalBecomeVisible(false);
+            // console.log(`___________ HideModal ___________`,{shouldSetModalVisibility});
             if (shouldSetModalVisibility) {
                 Modal.setModalVisibility(false);
             }
@@ -106,6 +107,7 @@ function BaseModal(
     );
 
     const handleShowModal = () => {
+        // console.log(`___________ ShowModal ___________`, { shouldSetModalVisibility })
         if (shouldSetModalVisibility) {
             Modal.setModalVisibility(true);
         }

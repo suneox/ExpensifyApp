@@ -55,6 +55,8 @@ type ReportScreenOnyxProps = {
     /** Indicates if there is a modal currently visible or not */
     modal: {
         isPopover: boolean,
+        isVisible: boolean,
+        willAlertModalBecomeVisible: boolean,
     },
     /** Tells us if the sidebar has rendered */
     isSidebarLoaded: OnyxEntry<boolean>;
@@ -229,7 +231,8 @@ function ReportScreen({
         Performance.markStart(CONST.TIMING.CHAT_RENDER);
     }
     const [isComposerFocus, setIsComposerFocus] = useState(false);
-    const viewportOffsetTop = useViewportOffsetTop(isComposerFocus && !modal.isPopover);
+    // console.log(`___________ ReportScreen ___________`, { modal, isComposerFocus });
+    const viewportOffsetTop = useViewportOffsetTop(isComposerFocus && !modal.isVisible);
 
     const reportID = getReportID(route);
     const {reportPendingAction, reportErrors} = ReportUtils.getReportOfflinePendingActionAndErrors(report);
@@ -637,7 +640,7 @@ export default withViewportOffsetTop(
                     prevProps.accountManagerReportID === nextProps.accountManagerReportID &&
                     prevProps.userLeavingStatus === nextProps.userLeavingStatus &&
                     prevProps.currentReportID === nextProps.currentReportID &&
-                    prevProps.viewportOffsetTop === nextProps.viewportOffsetTop &&
+                    lodashIsEqual(prevProps.modal, nextProps.modal) &&
                     lodashIsEqual(prevProps.parentReportAction, nextProps.parentReportAction) &&
                     lodashIsEqual(prevProps.report, nextProps.report),
             ),
