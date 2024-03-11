@@ -244,9 +244,6 @@ function getFrequentlyUsedEmojis(newEmoji: Emoji | Emoji[]): FrequentlyUsedEmoji
  */
 const getEmojiCodeWithSkinColor = (item: Emoji, preferredSkinToneIndex: OnyxEntry<string | number>): string | undefined => {
     const {code, types} = item;
-    if (!preferredSkinToneIndex) {
-        return;
-    }
 
     if (typeof preferredSkinToneIndex === 'number' && types?.[preferredSkinToneIndex]) {
         return types[preferredSkinToneIndex];
