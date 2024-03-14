@@ -1538,7 +1538,7 @@ const styles = (theme: ThemeColors) =>
 
         breadcrumbLogo: {
             top: 1.66, // Pixel-perfect alignment due to a small difference between logo height and breadcrumb text height
-            height: variables.lineHeightSizeh1,
+            height: variables.lineHeightSizeh2,
         },
 
         LHPNavigatorContainer: (isSmallScreenWidth: boolean) =>
@@ -3873,7 +3873,7 @@ const styles = (theme: ThemeColors) =>
 
         headerEnvBadge: {
             position: 'absolute',
-            bottom: -8,
+            bottom: -12,
             left: -8,
             height: 12,
             width: 22,
