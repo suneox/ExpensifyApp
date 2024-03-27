@@ -2,6 +2,7 @@ import React, {useCallback, useMemo, useRef} from 'react';
 import type {RefObject} from 'react';
 // eslint-disable-next-line no-restricted-imports
 import type {ScrollView as RNScrollView, StyleProp, View, ViewStyle} from 'react-native';
+import {View as RNVIew} from 'react-native';
 import {Keyboard} from 'react-native';
 import type {OnyxEntry} from 'react-native-onyx';
 import {withOnyx} from 'react-native-onyx';
@@ -101,10 +102,13 @@ function FormWrapper({
         (safeAreaPaddingBottomStyle: SafeAreaChildrenProps['safeAreaPaddingBottomStyle']) => (
             <FormElement
                 key={formID}
+                testID='xxxx'
                 ref={formContentRef}
                 style={[style, safeAreaPaddingBottomStyle]}
             >
-                {children}
+                {/* <RNVIew style={[styles.flexGrow1, styles.overflowAuto]}> */}
+                    {children}
+                {/* </RNVIew> */}
                 {isSubmitButtonVisible && (
                     <FormAlertWithSubmitButton
                         buttonText={submitButtonText}

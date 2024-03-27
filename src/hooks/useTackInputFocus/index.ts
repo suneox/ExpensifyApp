@@ -1,4 +1,4 @@
-import {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
 import useDebouncedState from '@hooks/useDebouncedState';
 
 /**
@@ -7,11 +7,13 @@ import useDebouncedState from '@hooks/useDebouncedState';
 export default function useTackInputFocus(enable = false): boolean {
     const [, isInputFocusDebounced, setIsInputFocus] = useDebouncedState(false);
 
+    const elementFocusingRef = useRef<HTMLElement | null>(null);
     const handleFocusIn = useCallback(
         (event: FocusEvent) => {
             const targetElement = event.target as HTMLElement;
             if (targetElement.tagName === 'INPUT' || targetElement.tagName === 'TEXTAREA') {
                 setIsInputFocus(true);
+                // targetElement.scrollIntoView();
             }
         },
         [setIsInputFocus],
@@ -22,13 +24,17 @@ export default function useTackInputFocus(enable = false): boolean {
             const targetElement = event.target as HTMLElement;
             if (targetElement.tagName === 'INPUT' || targetElement.tagName === 'TEXTAREA') {
                 setIsInputFocus(false);
+                // elementFocusingRef.current = null;
             }
         },
         [setIsInputFocus],
     );
 
-    const resetScrollPositionOnVisualViewport = useCallback(() => {
+    const resetScrollPositionOnVisualViewport = useCallback((e: Event) => {
+        const eventTarget = e?.target as VisualViewport;
+        console.log(`___________ ResetScrollPositionOnVisualViewport ___________`, eventTarget)
         window.scrollTo({top: 0});
+        // elementFocusingRef.current?.scrollIntoView();
     }, []);
 
     useEffect(() => {

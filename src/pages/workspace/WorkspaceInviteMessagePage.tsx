@@ -119,6 +119,8 @@ function WorkspaceInviteMessagePage({workspaceInviteMessageDraft, invitedEmailsT
     return (
         <ScreenWrapper
             includeSafeAreaPaddingBottom={false}
+            shouldEnableMaxHeight
+            // shouldUseCachedViewportHeight
             testID={WorkspaceInviteMessagePage.displayName}
         >
             <FullPageNotFoundView
@@ -142,6 +144,9 @@ function WorkspaceInviteMessagePage({workspaceInviteMessageDraft, invitedEmailsT
                     validate={validate}
                     onSubmit={sendInvitation}
                     submitButtonText={translate('common.invite')}
+                    // submitFlexEnabled={false}
+                    // scrollContextEnabled
+                    submitButtonStyles={{marginTop: 0}}
                     enabledWhenOffline
                     footerContent={
                         <PressableWithoutFeedback

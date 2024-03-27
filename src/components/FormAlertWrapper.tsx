@@ -74,7 +74,7 @@ function FormAlertWrapper({
     }
 
     return (
-        <View style={containerStyles}>
+        <View testID='FormAlertWrapper' style={containerStyles}>
             {isAlertVisible && (
                 <FormHelpMessage
                     message={message}

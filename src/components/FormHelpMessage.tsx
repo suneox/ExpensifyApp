@@ -36,7 +36,7 @@ function FormHelpMessage({message = '', children, isError = true, style, shouldS
     const translatedMessage = Localize.translateIfPhraseKey(message);
 
     return (
-        <View style={[styles.flexRow, styles.alignItemsCenter, styles.mt2, styles.mb1, style]}>
+        <View testID='FormHelpMessage' style={[styles.flexRow, styles.alignItemsCenter, styles.mt2, styles.mb1, style]}>
             {isError && shouldShowRedDotIndicator && (
                 <Icon
                     src={Expensicons.DotIndicator}
