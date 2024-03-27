@@ -729,7 +729,7 @@ function openReport(
     }
 
     parameters.clientLastReadTime = currentReportData?.[reportID]?.lastReadTime ?? '';
-
+    console.log(`___________ OPEN_REPORT ___________`, parameters, { optimisticData, successData, failureData });
     if (isFromDeepLink) {
         // eslint-disable-next-line rulesdir/no-api-side-effects-method
         API.makeRequestWithSideEffects(SIDE_EFFECT_REQUEST_COMMANDS.OPEN_REPORT, parameters, {optimisticData, successData, failureData}).finally(() => {
@@ -758,6 +758,7 @@ function navigateToAndOpenReport(userLogins: string[], shouldDismissModal = true
     }
     const report = chat ?? newChat;
 
+    console.log(`___________ navigateToAndOpenReport ___________`, { shouldDismissModal, userLogins, chat, report });
     // We want to pass newChat here because if anything is passed in that param (even an existing chat), we will try to create a chat on the server
     openReport(report.reportID, '', userLogins, newChat);
     if (shouldDismissModal) {

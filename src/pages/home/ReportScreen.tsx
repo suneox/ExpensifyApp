@@ -234,7 +234,7 @@ function ReportScreen({
             reportProp?.lastMentionedTime,
         ],
     );
-
+    console.log(`___________ ReportScreen ___________`, { reportProp, reportMetadata, parentReportAction });
     const prevReport = usePrevious(report);
     const prevUserLeavingStatus = usePrevious(userLeavingStatus);
     const [isLinkingToMessage, setIsLinkingToMessage] = useState(!!reportActionIDFromRoute);
@@ -357,10 +357,14 @@ function ReportScreen({
                 (!!reportIDFromRoute && !ReportUtils.isValidReportIDFromPath(reportIDFromRoute))),
         [shouldShowSkeleton, report.reportID, isOptimisticDelete, reportMetadata?.isLoadingInitialReportActions, userLeavingStatus, shouldHideReport, reportIDFromRoute],
     );
+    console.log(`___________ RSC ___________`, { isLoading, shouldShowSkeleton, shouldShowReportActionList, shouldShowNotFoundPage });
 
     const fetchReport = useCallback(() => {
-        Report.openReport(reportIDFromRoute, reportActionIDFromRoute);
-    }, [reportIDFromRoute, reportActionIDFromRoute]);
+        if (!reportMetadata?.isLoadingInitialReportActions) {
+            console.log(`___________ fetchReport ___________`, { reportIDFromRoute, reportActionIDFromRoute });
+            Report.openReport(reportIDFromRoute, reportActionIDFromRoute);
+        }
+    }, [reportIDFromRoute, reportActionIDFromRoute, reportMetadata?.isLoadingInitialReportActions]);
 
     useEffect(() => {
         if (!report.reportID || !isFocused) {

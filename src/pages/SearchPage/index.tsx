@@ -127,6 +127,7 @@ function SearchPage({betas, reports, isSearchingForReports, navigation}: SearchP
     }, [localPersonalDetails, recentReports, userToInvite]);
 
     const selectReport = (option: ReportUtils.OptionData) => {
+        console.log(`___________ SelectReport ___________`, option);
         if (!option) {
             return;
         }
