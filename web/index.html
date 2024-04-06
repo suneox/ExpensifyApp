@@ -15,6 +15,18 @@
     <meta property="og:image" content="https://new.expensify.com/og-preview-image.png">
     <link rel="stylesheet" type="text/css" href="/css/fonts.css" />
     <link rel="stylesheet" type="text/css" href="/css/pdf.css" />
+    <!-- <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self' https://assets.onfido.com https://sdk.onfido.com;
+      script-src 'self' 'unsafe-eval' https://assets.onfido.com https://sentry.io https://*.sardine.ai/;
+      style-src 'self' 'unsafe-inline' https://assets.onfido.com https://sdk.onfido.com;
+      font-src 'self' https://sdk.onfido.com;
+      connect-src 'self' data: blob: *.onfido.com wss://*.onfido.com https://sentry.io;
+      img-src 'self' data: blob: https://assets.onfido.com/ https://sdk.onfido.com;
+      media-src blob: https://assets.onfido.com https://sdk.onfido.com;
+      worker-src 'self' blob:;
+      object-src 'self' blob:;
+      frame-src 'self' data: blob: https://*.sardine.ai/;
+    " /> -->
     <!-- Do not index the staging site -->
     <% if (htmlWebpackPlugin.options.isStaging) { %>
         <meta name="robots" content="noindex, nofollow">

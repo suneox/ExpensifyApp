@@ -24,6 +24,7 @@ type OnfidoEvent = Event & {
 
 function initializeOnfido({sdkToken, onSuccess, onError, onUserExit, preferredLocale, translate, theme}: InitializeOnfidoProps) {
     OnfidoSDK.init({
+        crossDevicePolicy: 'enable',
         token: sdkToken,
         containerId: CONST.ONFIDO.CONTAINER_ID,
         customUI: {
@@ -126,6 +127,35 @@ function Onfido({sdkToken, onSuccess, onError, onUserExit}: OnfidoProps, ref: Fo
     const {preferredLocale, translate} = useLocalize();
     const theme = useTheme();
 
+    const handleOnfidoEvent = (event: OnfidoEvent) => {
+        logOnFidoEvent(event);
+        const rootElement = window.document.getElementById(CONST.ONFIDO.CONTAINER_ID);
+        console.log(`___________ rootElement ___________`,rootElement)
+        if (rootElement) {
+            const iframe = rootElement.querySelector('iframe');
+            console.log(`___________ iframe ___________`,iframe)
+            if (iframe) {
+                const style = document.createElement('style');
+                console.log(`___________ style ___________`,style)
+                style.innerHTML = `
+                    #document-root {
+                        background-color: '#123456' !important;
+                    }
+                    #document-root {
+                        --osdk-color-content-button-tertiary-text: '#FFFFFF' !important;
+                        --ods-color-content-action: '#FFFFFF' !important;
+                    }
+                    .onfido-sdk-ui-DocumentAuto-footer {
+                        grid-template-rows: 1fr 110px !important
+                    }
+                `;
+                console.log(`___________ iframe.contentDocument ___________`,iframe.contentDocument);
+                // iframe.contentDocument?.head.appendChild(style);
+            }
+
+        }
+    }
+
     useEffect(() => {
         initializeOnfido({
             sdkToken,
@@ -137,8 +167,8 @@ function Onfido({sdkToken, onSuccess, onError, onUserExit}: OnfidoProps, ref: Fo
             theme,
         });
 
-        window.addEventListener('userAnalyticsEvent', logOnFidoEvent);
-        return () => window.removeEventListener('userAnalyticsEvent', logOnFidoEvent);
+        window.addEventListener('userAnalyticsEvent', handleOnfidoEvent);
+        return () => window.removeEventListener('userAnalyticsEvent', handleOnfidoEvent);
         // Onfido should be initialized only once on mount
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
