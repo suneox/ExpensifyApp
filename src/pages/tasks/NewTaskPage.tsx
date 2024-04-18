@@ -120,6 +120,9 @@ function NewTaskPage({task, reports, personalDetails}: NewTaskPageProps) {
         );
     };
 
+    const taskReport: OnyxEntry<Report> = useMemo(() => (task ? ReportUtils.getReport(task.parentReportID) : null), [task]);
+    console.log(`___________ NewTaskPage ___________`, {task, taskReport});
+
     return (
         <ScreenWrapper
             shouldEnableKeyboardAvoidingView={false}
@@ -178,7 +181,8 @@ function NewTaskPage({task, reports, personalDetails}: NewTaskPageProps) {
                                 description={shareDestination?.displayName ? shareDestination.subtitle : translate('newTaskPage.shareSomewhere')}
                                 icon={shareDestination?.icons}
                                 onPress={() => Navigation.navigate(ROUTES.NEW_TASK_SHARE_DESTINATION)}
-                                interactive={!task?.parentReportID}
+                                // interactive={!task?.parentReportID}
+                                interactive={!taskReport}
                                 shouldShowRightIcon={!task?.parentReportID}
                                 titleWithTooltips={shareDestination?.shouldUseFullTitleToDisplay ? undefined : shareDestination?.displayNamesWithTooltips}
                             />

@@ -137,6 +137,7 @@ function FloatingActionButtonAndPopover(
     const prevIsFocused = usePrevious(isFocused);
 
     const quickActionReport: OnyxEntry<OnyxTypes.Report> = useMemo(() => (quickAction ? ReportUtils.getReport(quickAction.chatReportID) : null), [quickAction]);
+    console.log(`___________ FloatingActionButtonAndPopover ___________`,quickActionReport);
 
     const quickActionPolicy = allPolicies ? allPolicies[`${ONYXKEYS.COLLECTION.POLICY}${quickActionReport?.policyID}`] : undefined;
 
@@ -337,7 +338,7 @@ function FloatingActionButtonAndPopover(
                               },
                           ]
                         : []),
-                    ...(quickAction?.action
+                    ...(quickAction?.action && !!quickActionReport
                         ? [
                               {
                                   icon: getQuickActionIcon(quickAction?.action),

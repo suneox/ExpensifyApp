@@ -2435,12 +2435,13 @@ function navigateToMostRecentReport(currentReport: OnyxEntry<Report>) {
     }
 }
 
-function leaveGroupChat(reportID: string) {
+function leaveGroupChat(reportID: string, shouldCleanupQuickAction = false) {
     const report = ReportUtils.getReport(reportID);
     if (!report) {
         Log.warn('Attempting to leave Group Chat that does not existing locally');
         return;
     }
+    console.log(`___________ LeaveGroupChat ___________`,{shouldCleanupQuickAction});
 
     const optimisticData: OnyxUpdate[] = [
         {
@@ -2448,7 +2449,11 @@ function leaveGroupChat(reportID: string) {
             key: `${ONYXKEYS.COLLECTION.REPORT}${reportID}`,
             value: null,
         },
-    ];
+    ].concat(shouldCleanupQuickAction ? {
+        onyxMethod: Onyx.METHOD.SET,
+        key: ONYXKEYS.NVP_QUICK_ACTION_GLOBAL_CREATE,
+        value: null,
+    } : [])
     navigateToMostRecentReport(report);
     API.write(WRITE_COMMANDS.LEAVE_GROUP_CHAT, {reportID}, {optimisticData});
 }
