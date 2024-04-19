@@ -82,6 +82,7 @@ import type {
     PersonalDetails,
     PersonalDetailsList,
     PolicyReportField,
+    QuickAction,
     RecentlyUsedReportFields,
     ReportActionReactions,
     ReportMetadata,
@@ -2435,6 +2436,15 @@ function navigateToMostRecentReport(currentReport: OnyxEntry<Report>) {
     }
 }
 
+let quickAction: OnyxEntry<QuickAction> = {};
+Onyx.connect({
+    key: ONYXKEYS.NVP_QUICK_ACTION_GLOBAL_CREATE,
+    callback: (val) => {
+        console.log('______NVP_QUICK_ACTION_GLOBAL_CREATE', val);
+        quickAction = val
+    },
+});
+
 function leaveGroupChat(reportID: string, shouldCleanupQuickAction = false) {
     const report = ReportUtils.getReport(reportID);
     if (!report) {
@@ -2449,11 +2459,15 @@ function leaveGroupChat(reportID: string, shouldCleanupQuickAction = false) {
             key: `${ONYXKEYS.COLLECTION.REPORT}${reportID}`,
             value: null,
         },
-    ].concat(shouldCleanupQuickAction ? {
-        onyxMethod: Onyx.METHOD.SET,
-        key: ONYXKEYS.NVP_QUICK_ACTION_GLOBAL_CREATE,
-        value: null,
-    } : [])
+    ];
+    // Clean up any quick actions for the report we're leaving from
+    if (quickAction?.chatReportID?.toString() === reportID) {
+        optimisticData.push({
+            onyxMethod: Onyx.METHOD.SET,
+            key: `${ONYXKEYS.COLLECTION.REPORT}${reportID}`,
+            value: null,
+        })
+    }
     navigateToMostRecentReport(report);
     API.write(WRITE_COMMANDS.LEAVE_GROUP_CHAT, {reportID}, {optimisticData});
 }
