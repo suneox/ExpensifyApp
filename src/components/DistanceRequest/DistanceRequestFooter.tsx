@@ -35,9 +35,11 @@ type DistanceRequestFooterProps = DistanceRequestFooterOnyxProps & {
 
     /** The transaction being interacted with */
     transaction: OnyxEntry<Transaction>;
+
+    onMapInteraction?: (interacted: boolean) => void;
 };
 
-function DistanceRequestFooter({waypoints, transaction, mapboxAccessToken, navigateToWaypointEditPage}: DistanceRequestFooterProps) {
+function DistanceRequestFooter({ waypoints, transaction, mapboxAccessToken, navigateToWaypointEditPage, onMapInteraction }: DistanceRequestFooterProps) {
     const theme = useTheme();
     const styles = useThemeStyles();
     const {translate} = useLocalize();
@@ -102,6 +104,7 @@ function DistanceRequestFooter({waypoints, transaction, mapboxAccessToken, navig
             )}
             <View style={styles.mapViewContainer}>
                 <DistanceMapView
+                    onMapInteraction={onMapInteraction}
                     accessToken={mapboxAccessToken?.token ?? ''}
                     mapPadding={CONST.MAPBOX.PADDING}
                     pitchEnabled={false}

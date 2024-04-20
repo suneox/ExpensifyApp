@@ -37,6 +37,7 @@ import StepScreenWrapper from './StepScreenWrapper';
 import withFullTransactionOrNotFound from './withFullTransactionOrNotFound';
 import type {WithWritableReportOrNotFoundProps} from './withWritableReportOrNotFound';
 import withWritableReportOrNotFound from './withWritableReportOrNotFound';
+import useDebouncedState from '@hooks/useDebouncedState';
 
 type IOURequestStepDistanceOnyxProps = {
     /** backup version of the original transaction  */
@@ -415,6 +416,10 @@ function IOURequestStepDistance({
         [isLoadingRoute, navigateToWaypointEditPage, waypoints],
     );
 
+    // const [scrollEnabled, setScrollEnabled] = useState(true);
+    const [scrollEnabled, debouncedScrollEnabled, setScrollEnabled] = useDebouncedState(true);
+    console.log(`___________ IOURequestStepDistance ___________`, { scrollEnabled, debouncedScrollEnabled });
+
     return (
         <StepScreenWrapper
             headerTitle={translate('common.distance')}
@@ -425,6 +430,7 @@ function IOURequestStepDistance({
             <>
                 <View style={styles.flex1}>
                     <DraggableList
+                        scrollEnabled={scrollEnabled}
                         data={waypointsList}
                         keyExtractor={(item) => item}
                         shouldUsePortal
@@ -433,6 +439,7 @@ function IOURequestStepDistance({
                         renderItem={renderItem}
                         ListFooterComponent={
                             <DistanceRequestFooter
+                                onMapInteraction={(interaction) => setScrollEnabled(!interaction)}
                                 waypoints={waypoints}
                                 navigateToWaypointEditPage={navigateToWaypointEditPage}
                                 transaction={transaction}

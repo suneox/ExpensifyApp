@@ -25,6 +25,8 @@ type DraggableListProps<T> = {
     /** [web] Portals are required when any of the parent components use transform prop. */
     shouldUsePortal?: boolean;
 
+    scrollEnabled?: boolean;
+
     /** Rendered at the bottom of all the items. Just like in the FlatList. */
     ListFooterComponent?: React.ReactElement;
 } & DraggableListData<T>;

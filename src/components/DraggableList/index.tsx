@@ -38,6 +38,7 @@ function DraggableList<T>(
         shouldUsePortal = false,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ListFooterComponent,
+        scrollEnabled = true,
     }: DraggableListProps<T>,
     ref: React.ForwardedRef<RNScrollView>,
 ) {
@@ -76,6 +77,7 @@ function DraggableList<T>(
     return (
         <ScrollView
             ref={ref}
+            scrollEnabled={scrollEnabled}
             style={styles.flex1}
             contentContainerStyle={styles.flex1}
         >

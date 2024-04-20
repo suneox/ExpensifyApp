@@ -2,7 +2,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {MapState} from '@rnmapbox/maps';
 import Mapbox, {MarkerView, setAccessToken} from '@rnmapbox/maps';
 import {forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {View} from 'react-native';
+import {PanResponder, View} from 'react-native';
 import {withOnyx} from 'react-native-onyx';
 import useThemeStyles from '@hooks/useThemeStyles';
 import setUserLocation from '@libs/actions/UserLocation';
@@ -15,12 +15,11 @@ import ONYXKEYS from '@src/ONYXKEYS';
 import Direction from './Direction';
 import type {MapViewHandle} from './MapViewTypes';
 import PendingMapView from './PendingMapView';
-import responder from './responder';
 import type {ComponentProps, MapViewOnyxProps} from './types';
 import utils from './utils';
 
 const MapView = forwardRef<MapViewHandle, ComponentProps>(
-    ({accessToken, style, mapPadding, userLocation: cachedUserLocation, styleURL, pitchEnabled, initialState, waypoints, directionCoordinates, onMapReady}, ref) => {
+    ({ accessToken, style, mapPadding, userLocation: cachedUserLocation, styleURL, pitchEnabled, initialState, waypoints, directionCoordinates, onMapReady, onMapInteraction }, ref) => {
         const navigation = useNavigation();
         const {isOffline} = useNetwork();
         const {translate} = useLocalize();
@@ -144,19 +143,51 @@ const MapView = forwardRef<MapViewHandle, ComponentProps>(
             }
         };
 
+        const responderRef = useRef(PanResponder.create({
+            onStartShouldSetPanResponder: () => {
+                console.log(`___________ OnStartShouldSetPanResponder ___________`);
+                onMapInteraction?.(true);
+                return true
+            },
+            onMoveShouldSetPanResponder: () => {
+                console.log(`___________ OnMoveShouldSetPanResponder ___________`);
+                onMapInteraction?.(true);
+                return true
+            },
+            onPanResponderTerminationRequest: () => {
+                console.log(`___________ OnPanResponderTerminationRequest ___________`);
+                onMapInteraction?.(false);
+                return false
+            },
+        }));
+
         return !isOffline && Boolean(accessToken) && Boolean(currentPosition) ? (
             <View style={style}>
                 <Mapbox.MapView
                     style={{flex: 1}}
                     styleURL={styleURL}
                     onMapIdle={setMapIdle}
-                    onTouchStart={() => setUserInteractedWithMap(true)}
                     pitchEnabled={pitchEnabled}
                     attributionPosition={{...styles.r2, ...styles.b2}}
                     scaleBarEnabled={false}
                     logoPosition={{...styles.l2, ...styles.b2}}
                     // eslint-disable-next-line react/jsx-props-no-spreading
-                    {...responder.panHandlers}
+                    {...responderRef.current.panHandlers}
+                    // gestureSettings={{
+                    //     /* Whether the single-touch pan/scroll gesture is enabled. */
+                    //     panEnabled: true, // props.panEnabled
+                    //     /* A constant factor that determines how quickly pan deceleration animations happen */
+                    //     panDecelerationFactor: 0.99, // props.panDecelerationFactor
+                    // }}
+                    onTouchStart={() => {
+                        console.log(`___________ OnTouchStart ___________`);
+                        setUserInteractedWithMap(true);
+                        onMapInteraction?.(true)
+                    }}
+                    onTouchEnd={() => {
+                        console.log(`___________ OnTouchStart ___________`);
+                        onMapInteraction?.(false);
+                    }}
                 >
                     <Mapbox.Camera
                         ref={cameraRef}
