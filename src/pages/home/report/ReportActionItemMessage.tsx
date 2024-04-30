@@ -41,7 +41,7 @@ type ReportActionItemMessageProps = ReportActionItemMessageOnyxProps & {
 function ReportActionItemMessage({action, transaction, displayAsGroup, reportID, style, isHidden = false}: ReportActionItemMessageProps) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
-
+    console.log(`___________ ReportActionItemMessage ___________`, action);
     const fragments = (action.previousMessage ?? action.message ?? []).filter((item) => !!item);
     const isIOUReport = ReportActionsUtils.isMoneyRequestAction(action);
 

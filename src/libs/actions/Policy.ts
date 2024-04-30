@@ -3721,6 +3721,7 @@ function deleteWorkspaceCategories(policyID: string, categoryNamesToDelete: stri
  */
 function acceptJoinRequest(reportID: string, reportAction: OnyxEntry<ReportAction>) {
     const choice = CONST.REPORT.ACTIONABLE_MENTION_JOIN_WORKSPACE_RESOLUTION.ACCEPT;
+    console.log(`___________ AcceptJoinRequest ___________`, { reportID, reportAction })
     if (!reportAction) {
         return;
     }
@@ -3771,6 +3772,8 @@ function acceptJoinRequest(reportID: string, reportAction: OnyxEntry<ReportActio
             },
         }),
     };
+
+    console.log(`___________ AcceptJoinRequest ___________`, parameters.requests, { optimisticData, failureData, successData })
 
     API.write(WRITE_COMMANDS.ACCEPT_JOIN_REQUEST, parameters, {optimisticData, failureData, successData});
 }

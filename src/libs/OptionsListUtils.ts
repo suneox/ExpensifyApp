@@ -531,7 +531,7 @@ function getAlternateText(
     {showChatPreviewLine = false, forcePolicyNamePreview = false, lastMessageTextFromReport = ''}: PreviewConfig & {lastMessageTextFromReport?: string},
 ) {
     if (!!option.isThread || !!option.isMoneyRequestReport) {
-        return lastMessageTextFromReport.length > 0 ? option.lastMessageText : Localize.translate(preferredLocale, 'report.noActivityYet');
+        return lastMessageTextFromReport.length > 0 ? lastMessageTextFromReport : option.lastMessageText ?? Localize.translate(preferredLocale, 'report.noActivityYet');
     }
     if (!!option.isChatRoom || !!option.isPolicyExpenseChat) {
         return showChatPreviewLine && !forcePolicyNamePreview && option.lastMessageText ? option.lastMessageText : option.subtitle;

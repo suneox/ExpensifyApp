@@ -133,7 +133,7 @@ function ReportActionsListItemRenderer({
             reportAction.childMoneyRequestCount,
         ],
     );
-
+    console.log(`___________ ShouldDisplayParentAction ___________`, shouldDisplayParentAction);
     return shouldDisplayParentAction ? (
         <ReportActionItemParentAction
             shouldHideThreadDividerLine={shouldDisplayParentAction && shouldHideThreadDividerLine}

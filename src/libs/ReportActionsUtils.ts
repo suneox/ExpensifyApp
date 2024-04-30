@@ -639,6 +639,16 @@ function filterOutDeprecatedReportActions(reportActions: ReportActions | null): 
         .map((entry) => entry[1]);
 }
 
+const fixInvalidData = (reportAction: ReportAction): ReportAction => {
+    if (reportAction.actionName === CONST.REPORT.ACTIONS.TYPE.ACTIONABLE_JOIN_REQUEST && reportAction.message && !Array.isArray(reportAction.message)) {
+        return {
+            ...reportAction,
+            message: [reportAction.message],
+        };
+    }
+    return reportAction;
+}
+
 /**
  * This method returns the report actions that are ready for display in the ReportActionsView.
  * The report actions need to be sorted by created timestamp first, and reportActionID second
@@ -660,7 +670,7 @@ function getSortedReportActionsForDisplay(reportActions: ReportActions | null | 
     }
 
     const baseURLAdjustedReportActions = filteredReportActions.map((reportAction) => replaceBaseURLInPolicyChangeLogAction(reportAction));
-    return getSortedReportActions(baseURLAdjustedReportActions, true);
+    return getSortedReportActions(baseURLAdjustedReportActions, true).map(fixInvalidData);
 }
 
 /**
@@ -1177,6 +1187,7 @@ export {
     isActionableJoinRequestPending,
     isActionableTrackExpense,
     isLinkedTransactionHeld,
+    fixInvalidData,
 };
 
 export type {LastVisibleMessage};

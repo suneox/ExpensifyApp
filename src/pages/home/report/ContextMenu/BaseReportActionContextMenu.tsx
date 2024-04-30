@@ -141,6 +141,7 @@ function BaseReportActionContextMenu({
             contextAction.shouldShow(type, reportAction, isArchivedRoom, betas, anchor, isChronosReport, reportID, isPinnedChat, isUnreadChat, !!isOffline, isMini),
     );
 
+    console.log(`___________ filteredContextMenuActions ___________`,filteredContextMenuActions)
     if (isMini) {
         const menuAction = filteredContextMenuActions.at(-1);
         const otherActions = filteredContextMenuActions.slice(0, -1);

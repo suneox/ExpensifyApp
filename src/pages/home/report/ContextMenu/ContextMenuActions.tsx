@@ -35,7 +35,7 @@ import {hideContextMenu, showDeleteModal} from './ReportActionContextMenu';
 
 /** Gets the HTML version of the message in an action */
 function getActionHtml(reportAction: OnyxEntry<ReportAction>): string {
-    const message = reportAction?.message?.at(-1) ?? null;
+    const message = reportAction?.message?.at?.(-1) ?? null;
     return message?.html ?? '';
 }
 
@@ -458,6 +458,7 @@ const ContextMenuActions: ContextMenuAction[] = [
         successIcon: Expensicons.Download,
         shouldShow: (type, reportAction, isArchivedRoom, betas, menuTarget, isChronosReport, reportID, isPinnedChat, isUnreadChat, isOffline): reportAction is ReportAction => {
             const isAttachment = ReportActionsUtils.isReportActionAttachment(reportAction);
+            console.log(`___________ C1 ___________`);
             const messageHtml = getActionHtml(reportAction);
             return (
                 isAttachment && messageHtml !== CONST.ATTACHMENT_UPLOADING_MESSAGE_HTML && !!reportAction?.reportActionID && !ReportActionsUtils.isMessageDeleted(reportAction) && !isOffline
