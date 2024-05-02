@@ -6,6 +6,7 @@ import type {DraggableListProps} from './types';
 
 function DraggableList<T>({renderClone, shouldUsePortal, ...viewProps}: DraggableListProps<T>, ref: React.ForwardedRef<FlatList<T>>) {
     const styles = useThemeStyles();
+
     return (
         <DraggableFlatList
             ref={ref}

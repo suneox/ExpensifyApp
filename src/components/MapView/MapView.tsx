@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {MapState} from '@rnmapbox/maps';
 import Mapbox, {MarkerView, setAccessToken} from '@rnmapbox/maps';
 import {forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {View} from 'react-native';
+import type {GestureResponderEvent, PanResponderCallbacks, PanResponderGestureState} from 'react-native';
+import { View, PanResponder } from 'react-native';
 import {withOnyx} from 'react-native-onyx';
 import useThemeStyles from '@hooks/useThemeStyles';
 import setUserLocation from '@libs/actions/UserLocation';
@@ -12,12 +14,81 @@ import CONST from '@src/CONST';
 import useLocalize from '@src/hooks/useLocalize';
 import useNetwork from '@src/hooks/useNetwork';
 import ONYXKEYS from '@src/ONYXKEYS';
+import type { GestureSettings } from '@rnmapbox/maps/lib/typescript/src/components/MapView';
 import Direction from './Direction';
 import type {MapViewHandle} from './MapViewTypes';
 import PendingMapView from './PendingMapView';
 import responder from './responder';
 import type {ComponentProps, MapViewOnyxProps} from './types';
 import utils from './utils';
+
+
+const gestureSettings: Required<GestureSettings> = {
+    doubleTapToZoomInEnabled: true,
+    doubleTouchToZoomOutEnabled: true,
+    pinchPanEnabled: true,
+    pinchZoomEnabled: true,
+    pinchZoomDecelerationEnabled: true,
+    pitchEnabled: true,
+    quickZoomEnabled: true,
+    rotateEnabled: true,
+    rotateDecelerationEnabled: true,
+    panEnabled: true,
+    panDecelerationFactor: 1,
+    simultaneousRotateAndPinchZoomEnabled: true,
+    zoomAnimationAmount: 1
+}
+
+const panResponderCaptureHandler: Required<PanResponderCallbacks> = {
+    onMoveShouldSetPanResponder: (e: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        console.log(`___________ onMoveShouldSetPanResponder ___________`, gestureState);
+        return true;
+    },
+    onStartShouldSetPanResponder (e: GestureResponderEvent, gestureState: PanResponderGestureState): boolean {
+        console.log('___________ onStartShouldSetPanResponder ___________',   );
+        return true;
+    },
+    onPanResponderGrant (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ onPanResponderGrant ___________',   );
+    },
+    onPanResponderMove (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ onPanResponderMove ___________',   );
+    },
+    onPanResponderRelease (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ onPanResponderRelease ___________',   );
+    },
+    onPanResponderTerminate (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ ::onPanResponderTerminate:: ___________', e);
+    },
+    onMoveShouldSetPanResponderCapture (e: GestureResponderEvent, gestureState: PanResponderGestureState): boolean {
+        console.log('___________ onMoveShouldSetPanResponderCapture ___________',   );
+        return true;
+    },
+    onStartShouldSetPanResponderCapture (e: GestureResponderEvent, gestureState: PanResponderGestureState): boolean {
+        console.log('___________ onStartShouldSetPanResponderCapture ___________',   );
+        return true;
+    },
+    onPanResponderReject (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ onPanResponderReject ___________',   );
+    },
+    onPanResponderStart (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ onPanResponderStart ___________',   );
+    },
+    onPanResponderEnd (e: GestureResponderEvent, gestureState: PanResponderGestureState): void {
+        console.log('___________ onPanResponderEnd ___________',   );
+    },
+    onPanResponderTerminationRequest (e: GestureResponderEvent, gestureState: PanResponderGestureState): boolean {
+        console.log('___________ onPanResponderTerminationRequest ___________',   );
+        return false;
+    },
+    onShouldBlockNativeResponder (e: GestureResponderEvent, gestureState: PanResponderGestureState): boolean {
+        console.log('___________ onShouldBlockNativeResponder ___________',   );
+        return true;
+    }
+}
+
+const responderCapture = PanResponder.create(panResponderCaptureHandler);
+
 
 const MapView = forwardRef<MapViewHandle, ComponentProps>(
     ({accessToken, style, mapPadding, userLocation: cachedUserLocation, styleURL, pitchEnabled, initialState, waypoints, directionCoordinates, onMapReady, interactive = true}, ref) => {
@@ -79,7 +150,7 @@ const MapView = forwardRef<MapViewHandle, ComponentProps>(
             if (!shouldPanMapToCurrentPosition()) {
                 return;
             }
-
+            console.log(`___________ SetCamera:1 ___________`);
             cameraRef.current.setCamera({
                 zoomLevel: CONST.MAPBOX.DEFAULT_ZOOM,
                 animationDuration: 1500,
@@ -108,6 +179,7 @@ const MapView = forwardRef<MapViewHandle, ComponentProps>(
                 }
 
                 if (waypoints.length === 1) {
+                    console.log(`___________ SetCamera:2 ___________`);
                     cameraRef.current?.setCamera({
                         zoomLevel: CONST.MAPBOX.SINGLE_MARKER_ZOOM,
                         animationDuration: 1500,
@@ -118,6 +190,7 @@ const MapView = forwardRef<MapViewHandle, ComponentProps>(
                         waypoints.map((waypoint) => waypoint.coordinate),
                         directionCoordinates,
                     );
+                    console.log(`___________ FitBounds ___________`);
                     cameraRef.current?.fitBounds(northEast, southWest, mapPadding, 1000);
                 }
             }, [mapPadding, waypoints, isIdle, directionCoordinates]),
@@ -154,9 +227,10 @@ const MapView = forwardRef<MapViewHandle, ComponentProps>(
                     pitchEnabled={pitchEnabled}
                     attributionPosition={{...styles.r2, ...styles.b2}}
                     scaleBarEnabled={false}
+                    // gestureSettings={gestureSettings}
                     logoPosition={{...styles.l2, ...styles.b2}}
                     // eslint-disable-next-line react/jsx-props-no-spreading
-                    {...responder.panHandlers}
+                    {...responderCapture.panHandlers}
                 >
                     <Mapbox.Camera
                         ref={cameraRef}
