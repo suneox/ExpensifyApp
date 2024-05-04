@@ -261,12 +261,18 @@ function ReportScreen({
     const prevReport = usePrevious(report);
     const prevUserLeavingStatus = usePrevious(userLeavingStatus);
     const [isLinkingToMessage, setIsLinkingToMessage] = useState(!!reportActionIDFromRoute);
+    const isArchivedRoom = ReportUtils.isArchivedRoom(report);
     const reportActions = useMemo(() => {
         if (!sortedAllReportActions.length) {
             return [];
         }
-        return ReportActionsUtils.getContinuousReportActionChain(sortedAllReportActions, reportActionIDFromRoute);
-    }, [reportActionIDFromRoute, sortedAllReportActions]);
+        const filteredReportActions = ReportActionsUtils.getContinuousReportActionChain(sortedAllReportActions, reportActionIDFromRoute);
+        if (isArchivedRoom) {
+            return sortedAllReportActions;
+            // return sortedAllReportActions.find(rp => rp.actionName === CONST.REPORT.ACTIONS.TYPE.CREATED)
+        };
+        return filteredReportActions;
+    }, [isArchivedRoom, reportActionIDFromRoute, sortedAllReportActions]);
 
     // Define here because reportActions are recalculated before mount, allowing data to display faster than useEffect can trigger.
     // If we have cached reportActions, they will be shown immediately.
@@ -347,7 +353,7 @@ function ReportScreen({
     }
 
     const transactionThreadReportID = useMemo(
-        () => ReportActionsUtils.getOneTransactionThreadReportID(report.reportID, reportActions ?? [], false, isOffline),
+        () => ReportActionsUtils.getOneTransactionThreadReportID(report.reportID, reportActions ?? [], isOffline),
         [report.reportID, reportActions, isOffline],
     );
 
