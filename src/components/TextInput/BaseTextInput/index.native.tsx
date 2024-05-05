@@ -1,6 +1,6 @@
 import Str from 'expensify-common/lib/str';
 import type {ForwardedRef} from 'react';
-import React, {forwardRef, useCallback, useEffect, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, StyleProp, TextInput, TextInputFocusEventData, ViewStyle} from 'react-native';
 import {ActivityIndicator, Animated, StyleSheet, View} from 'react-native';
 import Checkbox from '@components/Checkbox';
@@ -257,6 +257,21 @@ function BaseTextInput(
         autoGrowHeight && {scrollPaddingTop: typeof maxAutoGrowHeight === 'number' ? 2 * maxAutoGrowHeight : undefined},
     ]);
 
+    const [inputLayoutReady, setInputLayoutReady] = useState(false);
+    const onInputLayout = useCallback(
+        () => setInputLayoutReady(true),
+        [],
+    );
+    const inputPaddingStyle = useMemo(() => {
+        if (!inputLayoutReady) {
+            return [];
+        }
+        return [
+            (!hasLabel || isMultiline) && inputLayoutReady && styles.pv0,
+            !!prefixCharacter && StyleUtils.getPaddingLeft(StyleUtils.getCharacterPadding(prefixCharacter) + styles.pl1.paddingLeft),
+        ]
+    }, [StyleUtils, hasLabel, inputLayoutReady, isMultiline, prefixCharacter, styles.pl1.paddingLeft, styles.pv0]);
+
     return (
         <>
             <View style={[containerStyles]}>
@@ -319,6 +334,7 @@ function BaseTextInput(
                                 </View>
                             )}
                             <InputComponent
+                                onLayout={onInputLayout}
                                 ref={(element: AnimatedTextInputRef | AnimatedMarkdownTextInputRef | null): void => {
                                     const baseTextInputRef = element as BaseTextInputRef | null;
                                     if (typeof ref === 'function') {
@@ -340,8 +356,9 @@ function BaseTextInput(
                                     styles.flex1,
                                     styles.w100,
                                     inputStyle,
-                                    (!hasLabel || isMultiline) && styles.pv0,
-                                    !!prefixCharacter && StyleUtils.getPaddingLeft(StyleUtils.getCharacterPadding(prefixCharacter) + styles.pl1.paddingLeft),
+                                    ...inputPaddingStyle,
+                                    // (!hasLabel || isMultiline) && styles.pv0,
+                                    // !!prefixCharacter && StyleUtils.getPaddingLeft(StyleUtils.getCharacterPadding(prefixCharacter) + styles.pl1.paddingLeft),
                                     inputProps.secureTextEntry && styles.secureInput,
 
                                     !isMultiline && {height, lineHeight: undefined},
