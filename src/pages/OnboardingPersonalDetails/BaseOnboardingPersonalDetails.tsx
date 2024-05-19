@@ -1,9 +1,10 @@
-import React, {useCallback, useState} from 'react';
+import {useIsFocused} from '@react-navigation/native';
+import React, {useCallback, useImperativeHandle, useRef, useState} from 'react';
 import {View} from 'react-native';
 import {withOnyx} from 'react-native-onyx';
 import FormProvider from '@components/Form/FormProvider';
 import InputWrapper from '@components/Form/InputWrapper';
-import type {FormOnyxValues} from '@components/Form/types';
+import type {FormOnyxValues, FormRef} from '@components/Form/types';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import KeyboardAvoidingView from '@components/KeyboardAvoidingView';
 import OfflineIndicator from '@components/OfflineIndicator';
@@ -18,6 +19,7 @@ import useThemeStyles from '@hooks/useThemeStyles';
 import useWindowDimensions from '@hooks/useWindowDimensions';
 import * as ErrorUtils from '@libs/ErrorUtils';
 import Navigation from '@libs/Navigation/Navigation';
+import OnboardingRefManager, {TOnboardingRef} from '@libs/OnboardingRefManager';
 import * as ValidationUtils from '@libs/ValidationUtils';
 import variables from '@styles/variables';
 import * as PersonalDetails from '@userActions/PersonalDetails';
@@ -116,6 +118,19 @@ function BaseOnboardingPersonalDetails({currentUserPersonalDetails, shouldUseNat
         return errors;
     };
 
+    const formRef = useRef<FormRef>(null);
+
+    const isFocused = useIsFocused();
+
+    const handleOuterClick = useCallback(() => {
+        if (isFocused) {
+            formRef.current?.triggerValidate();
+        }
+    }, [isFocused]);
+
+    const onboardingLocalRef = useRef<TOnboardingRef>(null);
+    useImperativeHandle(isFocused ? OnboardingRefManager.ref : onboardingLocalRef, () => ({handleOuterClick}), [handleOuterClick]);
+
     const PersonalDetailsFooterInstance = <OfflineIndicator />;
 
     return (
@@ -130,6 +145,7 @@ function BaseOnboardingPersonalDetails({currentUserPersonalDetails, shouldUseNat
                 behavior="padding"
             >
                 <FormProvider
+                    ref={formRef}
                     style={[styles.flexGrow1, shouldUseNarrowLayout && styles.mt5, styles.mb5, shouldUseNarrowLayout ? styles.mh8 : styles.mh5]}
                     formID={ONYXKEYS.FORMS.ONBOARDING_PERSONAL_DETAILS_FORM}
                     footerContent={isSmallScreenWidth && PersonalDetailsFooterInstance}

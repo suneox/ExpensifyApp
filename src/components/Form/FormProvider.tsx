@@ -229,8 +229,18 @@ function FormProvider(
         },
         [inputValues],
     );
+
+    const triggerValidate = useCallback(
+        (shouldClearServerError = false) => {
+            const trimmedStringValues = shouldTrimValues ? ValidationUtils.prepareValues(inputValues) : inputValues;
+            onValidate(trimmedStringValues, shouldClearServerError);
+        },
+        [onValidate, inputValues, shouldTrimValues],
+    );
+
     useImperativeHandle(forwardedRef, () => ({
         resetForm,
+        triggerValidate,
     }));
 
     const registerInput = useCallback<RegisterInput>(
