@@ -2656,8 +2656,16 @@ function leaveRoom(reportID: string, isWorkspaceMemberLeavingWorkspaceRoom = fal
         reportID,
     };
 
-    API.write(WRITE_COMMANDS.LEAVE_ROOM, parameters, {optimisticData, successData, failureData});
-    navigateToMostRecentReport(report);
+    // API.write(WRITE_COMMANDS.LEAVE_ROOM, parameters, {optimisticData, successData, failureData});
+    const isPublicRoom = ReportUtils.isPublicRoom(report);
+    const previousRoute = Navigation.getPreviousRoute();
+    if (isPublicRoom && previousRoute === ROUTES.SIGN_IN_MODAL) {
+        console.log(`___________ NavigateToConciergeChat ___________`);
+        navigateToConciergeChat();
+    } else {
+        console.log(`___________ NavigateToMostRecentReport ___________`);
+        navigateToMostRecentReport(report);
+    }
 }
 
 /** Invites people to a room */

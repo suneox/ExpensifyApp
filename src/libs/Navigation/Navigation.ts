@@ -297,9 +297,28 @@ function isNavigationReady(): Promise<void> {
     return navigationIsReadyPromise;
 }
 
+let previousPath = '';
+let currentPath = '';
+function listenForNavigationReady() {
+    navigationRef.current?.addListener('state', (event) => {
+        const currentRoute = navigationRef.getCurrentRoute();
+        const currentRoutePath = currentRoute?.path || getActiveRoute();
+        if (currentRoutePath === currentPath) {
+            return;
+        }
+        previousPath = currentPath;
+        currentPath = currentRoutePath;
+    });
+}
+
+function getPreviousRoute() {
+    return previousPath.startsWith('/') ? previousPath.substring(1) : previousPath;
+}
+
 function setIsNavigationReady() {
     goToPendingRoute();
     resolveNavigationIsReadyPromise();
+    listenForNavigationReady();
 }
 
 /**
@@ -371,6 +390,7 @@ export default {
     dismissModalWithReport,
     isActiveRoute,
     getActiveRoute,
+    getPreviousRoute,
     getActiveRouteWithoutParams,
     goBack,
     isNavigationReady,
