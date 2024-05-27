@@ -1,6 +1,6 @@
 import type {ForwardedRef} from 'react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import type {TextInput} from 'react-native';
+import type {TextInput, TextInputProps} from 'react-native';
 import { StyleSheet } from 'react-native';
 import type {AnimatedMarkdownTextInputRef} from '@components/RNMarkdownTextInput';
 import RNMarkdownTextInput from '@components/RNMarkdownTextInput';
@@ -14,7 +14,6 @@ import type {ComposerProps} from './types';
 import RNFS from 'react-native-fs';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-let imageRef: string = '';
 function Composer(
     {
         shouldClear = false,
@@ -34,6 +33,7 @@ function Composer(
     }: ComposerProps,
     ref: ForwardedRef<TextInput>,
 ) {
+    const copyImageRef = useRef<string>('');
     const textInput = useRef<AnimatedMarkdownTextInputRef | null>(null);
     const {isFocused, shouldResetFocus} = useResetComposerFocus(textInput);
     const theme = useTheme();
@@ -72,15 +72,16 @@ function Composer(
 
     const convertBase64ToFile = async (base64Data: string, fileName: string, fileType: string) => {
         try {
-            const filePath = `${RNFS.TemporaryDirectoryPath}/${fileName}`;
-            const base64 = base64Data.split(';base64,').pop() as string;
-            await RNFS.writeFile(filePath, base64, 'base64');
-
-            return {
-                uri: `file://${filePath}`,
+            // const filePath = `${RNFS.TemporaryDirectoryPath}/${fileName}`;
+            // const base64 = base64Data.split(';base64,').pop() as string;
+            // await RNFS.writeFile(filePath, base64, 'base64');
+            // const uri = `file://${filePath}`;
+            const file: Partial<File> = {
+                uri: base64Data,
                 type: `image/${fileType}`,
                 name: fileName,
-            };
+            }
+            return file as File;
         } catch (error) {
             console.error('Error converting base64 to file:', error);
             return null;
@@ -101,20 +102,22 @@ function Composer(
 
     const handleTextChange = useCallback(async (_text: string) => {
         let text = _text;
-        console.log('handleTextChange', text);
+        console.log('handleTextChange', text.slice(0, 10));
         // const base64ImageRegex = /data:image\/(?:jpeg|png|gif|svg\+xml|bmp|webp|x-icon);base64,([A-Za-z0-9+/=]+)/g;
         const base64ImageRegex = /data:image\/(png|jpg|jpeg|gif);base64,([a-zA-Z0-9+/=\s]+)/s;
 
         const match = text.match(base64ImageRegex);
         if(!match) {
             if(!text.includes('EXP_IMAGE')) {
-                console.log('No base64 string found');
+                console.log('No base64 image found');
                 props.onChangeText?.(text);
                 return;
             }
-            console.log('Found base64 string:', imageRef.slice(0, 100));
-            text = text.replace('EXP_IMAGE', imageRef);
-            console.log(text);
+            if (!copyImageRef.current) {
+                return;
+            }
+            console.log('Found image string:', copyImageRef.current.split(';')[0]);
+            text = text.replace('EXP_IMAGE', copyImageRef.current);
         }
         // Step 1: Remove base64-encoded image data from the text
         const textWithoutImages = text.replace(base64ImageRegex, '');
@@ -125,52 +128,49 @@ function Composer(
         // Step 3: Assign the extracted base64 data to a variable
         const image = extractedBase64Data?.[0] as string; // Assuming there is only one image in the text
 
-        console.log({textWithoutImages}); // Output the text without images
-        console.log({image}); // Output the extracted base64 data of the image
-
+        console.log('____', {textWithoutImages}); // Output the text without images
+        
         const fileType = parseImageFileType(image) as string;
         const fileName = `${Date.now()}.${fileType}`;
 
         console.log({fileType, fileName});
         const file = await convertBase64ToFile(image, fileName, fileType);
         
-        console.log({file});
-
-        props.onPasteFile?.(file);
+        if (file?.uri) {
+            props.onPasteFile?.(file);
+        }
 
     }, []);
 
-    const [isPressing, setIsPressing] = useState(false);
 
     let longPressTimer: NodeJS.Timeout | null = null;
-    const handleLongPress = async (e) => {
-        e.persist();
+    const handlePressIn: TextInputProps['onPressIn'] = async (e) => {
+        // e.persist();
         longPressTimer = setTimeout(async () => {
-            setIsPressing(true);
             console.log('Long press detected!');
-            const hasImage = await Clipboard.hasImage();
-            console.log({hasImage});
-            if(hasImage) {
-                Clipboard.getImageJPG().then((image) => {
-                    console.log({ image: image.slice(0, 100)});
-                    imageRef = image;
-                });
-                Clipboard.setString(`EXP_IMAGE`);
-            }
             const hasString = await Clipboard.hasString();
-            if(hasString) {
-                const text = await Clipboard.getString();
-                console.log({text});
+            console.log({ hasString });
+            if(!hasString) {
+                const hasImage = await Clipboard.hasImage();
+                if(hasImage) {
+                    Clipboard.getImagePNG().then((image) => {
+                        console.log('::::::EXP_IMAGE', { image: image.split(';')[0]});
+                        copyImageRef.current = image;
+                        // Clipboard.setString(image);
+                        Clipboard.setString('EXP_IMAGE');
+                    });
+                }
+            } else {
+                Clipboard.getString().then((text) => {
+                    console.log('::Clipboard.GetString::',{ text: text.slice(0, 10)});
+                });
             }
-        }, 500);
+        }, 0);
     };
 
-    const handlePressOut = (e) => {
-        e.persist();
-        if (isPressing) {
-            setIsPressing(false);
-            clearTimeout(longPressTimer as NodeJS.Timeout);
-        }
+    const handlePressOut: TextInputProps['onPressOut'] = (e) => {
+        // e.persist();
+        clearTimeout(longPressTimer as NodeJS.Timeout);
     };
 
     return (
@@ -196,7 +196,7 @@ function Composer(
                 }
                 props?.onBlur?.(e);
             }}
-            onPressIn={handleLongPress}
+            onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             onChangeText={handleTextChange}
         />
