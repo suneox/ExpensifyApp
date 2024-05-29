@@ -199,6 +199,7 @@ function Composer(
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             onChangeText={handleTextChange}
+            onImageChange={console.log}
         />
     );
 }
