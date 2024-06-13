@@ -239,6 +239,7 @@ function ReportActionsList({
             reportActionSize.current > sortedVisibleReportActions.length &&
             hasNewestReportAction
         ) {
+            console.log(`___________ C1 ___________`);
             reportScrollManager.scrollToBottom();
         }
         previousLastIndex.current = lastActionIndex;
@@ -334,6 +335,7 @@ function ReportActionsList({
             return;
         }
         InteractionManager.runAfterInteractions(() => {
+            console.log(`___________ C2 ___________`);
             reportScrollManager.scrollToBottom();
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -346,6 +348,7 @@ function ReportActionsList({
             if (!isFromCurrentUser || !hasNewestReportActionRef.current) {
                 return;
             }
+            console.log(`___________ ScrollToBottomForCurrentUserAction ___________`);
             InteractionManager.runAfterInteractions(() => reportScrollManager.scrollToBottom());
         },
         [reportScrollManager],
@@ -410,9 +413,16 @@ function ReportActionsList({
             Report.openReport(report.reportID);
             return;
         }
-        reportScrollManager.scrollToBottom();
-        readActionSkipped.current = false;
-        Report.readNewestAction(report.reportID);
+
+        const unreadMessageIndex = sortedVisibleReportActions.findIndex((action) => action.reportActionID === currentUnreadMarker);
+        console.log(`___________  ___________`, { unreadMessageIndex });
+        if (unreadMessageIndex) {
+            reportScrollManager.scrollToIndex(unreadMessageIndex);
+        } else {
+            reportScrollManager.scrollToBottom();
+            readActionSkipped.current = false;
+            Report.readNewestAction(report.reportID);
+        }
     };
 
     /**
@@ -677,6 +687,7 @@ function ReportActionsList({
     // When performing comment linking, initially 25 items are added to the list. Subsequent fetches add 15 items from the cache or 50 items from the server.
     // This is to ensure that the user is able to see the 'scroll to newer comments' button when they do comment linking and have not reached the end of the list yet.
     const canScrollToNewerComments = !isLoadingInitialReportActions && !hasNewestReportAction && sortedReportActions.length > 25 && !isLastPendingActionIsDelete;
+    // console.log(`___________ FloatingMessageCounter ___________`, { canScrollToNewerComments, currentUnreadMarker, isFloatingMessageCounterVisible });
     return (
         <>
             <FloatingMessageCounter
