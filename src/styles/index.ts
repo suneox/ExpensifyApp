@@ -4736,8 +4736,7 @@ const styles = (theme: ThemeColors) =>
         },
 
         walletIllustration: {
-            width: 262,
-            height: 152,
+            height: 180,
         },
 
         walletCardLimit: {
@@ -5117,11 +5116,6 @@ const styles = (theme: ThemeColors) =>
             textDecorationLine: 'line-through',
         },
 
-        tripIllustrationSize: {
-            width: 190,
-            height: 172,
-        },
-
         reportListItemTitle: {
             color: theme.text,
             fontSize: variables.fontSizeNormal,
@@ -5167,14 +5161,18 @@ const styles = (theme: ThemeColors) =>
             backgroundColor: theme.emptyFolderBG,
         },
 
+        emptyFolderDarkBG: {
+            backgroundColor: '#782c04',
+        },
+
         emptyStateVideo: {
             borderTopLeftRadius: variables.componentBorderRadiusLarge,
             borderTopRightRadius: variables.componentBorderRadiusLarge,
         },
 
-        emptyStateFolderIconSize: {
-            width: 184,
-            height: 112,
+        emptyStateFolderWithPaperIconSize: {
+            width: 160,
+            height: 100,
         },
 
         workflowApprovalVerticalLine: {
