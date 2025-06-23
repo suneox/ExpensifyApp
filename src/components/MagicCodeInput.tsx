@@ -1,7 +1,7 @@
 import type {ForwardedRef, KeyboardEvent} from 'react';
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import type {NativeSyntheticEvent, TextInputFocusEventData, TextInputKeyPressEventData} from 'react-native';
-import {StyleSheet, View} from 'react-native';
+import {InteractionManager, StyleSheet, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import useNetwork from '@hooks/useNetwork';
 import useStyleUtils from '@hooks/useStyleUtils';
@@ -9,6 +9,7 @@ import useThemeStyles from '@hooks/useThemeStyles';
 import {isMobileChrome, isMobileSafari} from '@libs/Browser';
 import {isNumeric} from '@libs/ValidationUtils';
 import CONST from '@src/CONST';
+import htmlDivElementRef from '@src/types/utils/htmlDivElementRef';
 import FormHelpMessage from './FormHelpMessage';
 import Text from './Text';
 import TextInput from './TextInput';
@@ -199,6 +200,7 @@ function MagicCodeInput(
         // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
     }, [value, shouldSubmitOnComplete]);
 
+    const containerRef = useRef<View>(null);
     /**
      * Focuses on the input when it is pressed.
      */
@@ -208,6 +210,9 @@ function MagicCodeInput(
             setInputAndIndex(lastFocusedIndex.current);
         }
         event.preventDefault();
+        InteractionManager.runAfterInteractions(() => {
+            htmlDivElementRef(containerRef).current?.scrollIntoView?.({ behavior: 'instant', block: 'end' });
+        });
     };
 
     /**
@@ -383,7 +388,7 @@ function MagicCodeInput(
 
     return (
         <>
-            <View style={[styles.magicCodeInputContainer]}>
+            <View style={[styles.magicCodeInputContainer]} ref={containerRef}>
                 <GestureDetector gesture={tapGesture}>
                     {/* Android does not handle touch on invisible Views so I created a wrapper around invisible TextInput just to handle taps */}
                     <View
