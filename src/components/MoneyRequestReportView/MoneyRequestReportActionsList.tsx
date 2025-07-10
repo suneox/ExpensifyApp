@@ -157,7 +157,7 @@ function MoneyRequestReportActionsList({
 
     const {selectedTransactionIDs, setSelectedTransactions, clearSelectedTransactions} = useSearchContext();
 
-    const isMobileSelectionModeEnabled = useMobileSelectionMode();
+    const {selectionMode} = useMobileSelectionMode();
     const {
         options: selectedTransactionsOptions,
         handleDeleteTransactions,
@@ -558,7 +558,7 @@ function MoneyRequestReportActionsList({
             style={[styles.flex1]}
             ref={wrapperViewRef}
         >
-            {shouldUseNarrowLayout && isMobileSelectionModeEnabled && (
+            {shouldUseNarrowLayout && !!selectionMode?.isEnabled && (
                 <>
                     <ButtonWithDropdownMenu
                         onPress={() => null}

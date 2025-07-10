@@ -139,7 +139,7 @@ function MoneyRequestReportTransactionList({
     const {isMouseDownOnInput, setMouseUp} = useMouseContext();
 
     const {selectedTransactionIDs, setSelectedTransactions, clearSelectedTransactions} = useSearchContext();
-    const isMobileSelectionModeEnabled = useMobileSelectionMode();
+    const {selectionMode} = useMobileSelectionMode();
 
     const toggleTransaction = useCallback(
         (transactionID: string) => {
@@ -276,7 +276,7 @@ function MoneyRequestReportTransactionList({
                                             return;
                                         }
 
-                                        if (isMobileSelectionModeEnabled) {
+                                        if (selectionMode?.isEnabled) {
                                             toggleTransaction(transaction.transactionID);
                                             return;
                                         }
@@ -298,7 +298,7 @@ function MoneyRequestReportTransactionList({
                                         if (!isSmallScreenWidth) {
                                             return;
                                         }
-                                        if (isMobileSelectionModeEnabled) {
+                                        if (selectionMode?.isEnabled) {
                                             toggleTransaction(transaction.transactionID);
                                             return;
                                         }
@@ -315,7 +315,7 @@ function MoneyRequestReportTransactionList({
                                         taxAmountColumnSize={taxAmountColumnSize}
                                         shouldShowTooltip
                                         shouldUseNarrowLayout={shouldUseNarrowLayout || isMediumScreenWidth}
-                                        shouldShowCheckbox={isMobileSelectionModeEnabled || !isSmallScreenWidth}
+                                        shouldShowCheckbox={!!selectionMode?.isEnabled || !isSmallScreenWidth}
                                         onCheckboxPress={toggleTransaction}
                                         columns={allReportColumns}
                                         scrollToNewTransaction={transaction.transactionID === newTransactions?.at(0)?.transactionID ? scrollToNewTransaction : undefined}
@@ -358,7 +358,7 @@ function MoneyRequestReportTransactionList({
                             title={translate('common.select')}
                             icon={Expensicons.CheckSquare}
                             onPress={() => {
-                                if (!isMobileSelectionModeEnabled) {
+                                if (!selectionMode?.isEnabled) {
                                     turnOnMobileSelectionMode();
                                 }
                                 toggleTransaction(selectedTransactionID);
