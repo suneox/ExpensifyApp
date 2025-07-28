@@ -190,3 +190,10 @@
 - Upstream PR/issue: https://github.com/facebook/react-native/pull/50782
 - E/App issue: https://github.com/Expensify/App/issues/64900
 - PR introducing patch: [#65804](https://github.com/Expensify/App/pull/65804)
+
+### [react-native+0.79.2+027+fix-crashed-when-paste-on-android.patch](react-native+0.79.2+027+fix-crashed-when-paste-on-android.patch)
+
+- Reason: ....
+- Upstream PR/issue: 🛑
+- E/App issue: 🛑
+- PR Introducing Patch: https://github.com/Expensify/App/pull/66925
