@@ -60,6 +60,7 @@ function DiscardChangesConfirmation({getHasUnsavedChanges, onCancel}: DiscardCha
 
     return (
         <ConfirmModal
+            testID='DiscardChangesConfirmation'
             isVisible={isVisible}
             title={translate('discardChangesConfirmation.title')}
             prompt={translate('discardChangesConfirmation.body')}

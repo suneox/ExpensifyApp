@@ -348,6 +348,7 @@ function AuthScreens() {
         const unsubscribeEscapeKey = KeyboardShortcut.subscribe(
             shortcutConfig.shortcutKey,
             () => {
+                console.log(`*** AuthScreens:dismissModal ***`,  modal.current)
                 if (modal.current.willAlertModalBecomeVisible) {
                     return;
                 }

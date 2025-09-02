@@ -116,6 +116,7 @@ function ModalComponent({
 
 function BaseModal(
     {
+        testID = 'base-modal',
         isVisible,
         onClose,
         shouldSetModalVisibility = true,
@@ -423,6 +424,7 @@ function BaseModal(
                     style={[styles.pAbsolute, {zIndex: 1}]}
                 >
                     <ModalComponent
+                        testID={testID}
                         // Prevent the parent element to capture a click. This is useful when the modal component is put inside a pressable.
                         onClick={(e) => e.stopPropagation()}
                         onBackdropPress={handleBackdropPress}

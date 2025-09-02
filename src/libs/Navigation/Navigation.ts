@@ -546,6 +546,7 @@ const dismissModal = (ref = navigationRef) => {
         ref.dispatch({type: CONST.NAVIGATION.ACTION_TYPE.DISMISS_MODAL});
         // Let React Navigation finish modal transition
         InteractionManager.runAfterInteractions(() => {
+            console.log(`*** DISMISS_MODAL:fireModalDismissed ***`);
             fireModalDismissed();
         });
     });

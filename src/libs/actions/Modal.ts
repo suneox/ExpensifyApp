@@ -28,6 +28,7 @@ function setCloseModal(onClose: () => void) {
  * Close topmost modal
  */
 function closeTop() {
+    console.log(`*** Modal:closeTop ***`, closeModals.length);
     if (closeModals.length === 0) {
         return;
     }

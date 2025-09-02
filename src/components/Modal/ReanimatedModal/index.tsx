@@ -59,15 +59,17 @@ function ReanimatedModal({
     const styles = useThemeStyles();
 
     const onBackButtonPressHandler = useCallback(() => {
-        if (isVisibleState) {
-            onBackButtonPress();
-            return true;
+        console.log(`*** ReanimatedModal:onBackButtonPressHandler ***`, { testID, isVisibleState, isTransitioning })
+        if (!isVisibleState || isTransitioning) {
+            return false;
         }
-        return false;
-    }, [isVisibleState, onBackButtonPress]);
+        onBackButtonPress();
+        return true;
+    }, [testID, isVisibleState, isTransitioning, onBackButtonPress]);
 
     const handleEscape = useCallback(
         (e: KeyboardEvent) => {
+            console.log(`*** ReanimatedModal:handleEscape ***`, {testID, key: e.key});
             if (e.key !== 'Escape' || onBackButtonPressHandler() !== true) {
                 return;
             }
@@ -199,7 +201,11 @@ function ReanimatedModal({
                 animationType="none"
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 visible={modalVisibility}
-                onRequestClose={onBackButtonPress}
+                // onRequestClose={onBackButtonPress}
+                onRequestClose={() => {
+                    console.log(`*** ReanimatedModal:onRequestClose ***`);
+                    onBackButtonPressHandler();
+                }}
                 statusBarTranslucent={statusBarTranslucent}
                 testID={testID}
                 onDismiss={() => {

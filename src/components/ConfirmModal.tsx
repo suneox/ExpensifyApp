@@ -11,6 +11,7 @@ import Modal from './Modal';
 import type BaseModalProps from './Modal/types';
 
 type ConfirmModalProps = {
+    testID?: string;
     /** Title of the modal */
     title?: string;
 
@@ -115,6 +116,7 @@ type ConfirmModalProps = {
 };
 
 function ConfirmModal({
+    testID = 'confirm-modal',
     confirmText = '',
     cancelText = '',
     prompt = '',
@@ -164,6 +166,7 @@ function ConfirmModal({
 
     return (
         <Modal
+            testID={testID}
             onClose={onCancel}
             onBackdropPress={onBackdropPress}
             isVisible={isVisible}

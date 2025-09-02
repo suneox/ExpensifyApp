@@ -146,7 +146,8 @@ function handleDismissModalAction(
 ) {
     const lastRoute = state.routes.at(-1);
     const newAction = StackActions.pop();
-
+    
+    console.log(`*** handleDismissModalAction ***`, {newAction, lastRoute: lastRoute?.name})
     if (!lastRoute?.name || !MODAL_ROUTES_TO_DISMISS.includes(lastRoute?.name)) {
         Log.hmmm('[Navigation] dismissModal failed because there is no modal stack to dismiss');
         return null;
