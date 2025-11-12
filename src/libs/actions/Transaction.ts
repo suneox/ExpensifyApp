@@ -913,7 +913,7 @@ function changeTransactionsReport(
             const targetReportKey = `${ONYXKEYS.COLLECTION.REPORT}${targetReportID}`;
             const targetReport =
                 allReports?.[targetReportKey] ?? (targetReportID === newReport?.reportID ? newReport : undefined) ?? (targetReportID === selfDMReport?.reportID ? selfDMReport : undefined);
-
+            console.log(`*** ChangeTransactionsReport ***`, { transactionCurrency, targetReportCurrency: targetReport?.currency })
             if (transactionCurrency === targetReport?.currency) {
                 const currentTotal = updatedReportTotals[targetReportID] ?? targetReport?.total ?? 0;
                 updatedReportTotals[targetReportID] = currentTotal - transactionAmount;
@@ -923,6 +923,14 @@ function changeTransactionsReport(
 
                 const currentUnheldNonReimbursableTotal = updatedReportUnheldNonReimbursableTotals[targetReportID] ?? targetReport?.unheldNonReimbursableTotal ?? 0;
                 updatedReportUnheldNonReimbursableTotals[targetReportID] = currentUnheldNonReimbursableTotal - (transactionReimbursable && !isOnHold(transaction) ? 0 : transactionAmount);
+            } else if (updatedReportTotals[targetReportID] !== undefined) {
+                console.log(`*** mukhrr ***`);
+                // if (updatedReportNonReimbursableTotals[targetReportID] === undefined) {
+                //     updatedReportNonReimbursableTotals[targetReportID] = targetReport?.nonReimbursableTotal ?? 0;
+                // }
+                // if (updatedReportUnheldNonReimbursableTotals[targetReportID] === undefined) {
+                //     updatedReportUnheldNonReimbursableTotals[targetReportID] = targetReport?.unheldNonReimbursableTotal ?? 0;
+                // }
             }
         }
 

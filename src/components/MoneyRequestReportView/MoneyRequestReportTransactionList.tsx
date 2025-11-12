@@ -1,6 +1,6 @@
 import {useFocusEffect} from '@react-navigation/native';
 import isEmpty from 'lodash/isEmpty';
-import React, {memo, useCallback, useContext, useMemo, useState} from 'react';
+import React, {memo, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {View} from 'react-native';
 import type {TupleToUnion} from 'type-fest';
 import ButtonWithDropdownMenu from '@components/ButtonWithDropdownMenu';
@@ -36,11 +36,12 @@ import {
     getAddExpenseDropdownOptions,
     getMoneyRequestSpendBreakdown,
     getReportOfflinePendingActionAndErrors,
+    getReportTransactions,
     isCurrentUserSubmitter,
     isExpenseReport,
 } from '@libs/ReportUtils';
 import {compareValues, getColumnsToShow, isTransactionAmountTooLong, isTransactionTaxAmountTooLong} from '@libs/SearchUIUtils';
-import {getAmount, getCategory, getCreated, getMerchant, getTag, getTransactionPendingAction, isTransactionPendingDelete, shouldShowViolation} from '@libs/TransactionUtils';
+import {getAmount, getCategory, getCreated, getMerchant, getReimbursable, getTag, getTransactionPendingAction, isTransactionPendingDelete, shouldShowViolation} from '@libs/TransactionUtils';
 import shouldShowTransactionYear from '@libs/TransactionUtils/shouldShowTransactionYear';
 import Navigation from '@navigation/Navigation';
 import type {ReportsSplitNavigatorParamList} from '@navigation/types';
@@ -128,6 +129,21 @@ const getTransactionValue = (transaction: OnyxTypes.Transaction, key: SortableCo
     }
 };
 
+/**
+ * Checks if a report contains both reimbursable and non-reimbursable transactions
+ */
+function hasReimbursableAndNonReimbursableTransactions(iouReportID: string | undefined): boolean {
+    const transactions = getReportTransactions(iouReportID);
+    if (!transactions || transactions.length === 0) {
+        return false;
+    }
+
+    const hasReimbursable = transactions.some((transaction) => getReimbursable(transaction));
+    const hasNonReimbursable = transactions.some((transaction) => !getReimbursable(transaction));
+
+    return hasReimbursable && hasNonReimbursable;
+}
+
 function MoneyRequestReportTransactionList({
     report,
     transactions,
@@ -153,6 +169,12 @@ function MoneyRequestReportTransactionList({
     const formattedOutOfPocketAmount = convertToDisplayString(reimbursableSpend, report?.currency);
     const formattedCompanySpendAmount = convertToDisplayString(nonReimbursableSpend, report?.currency);
     const shouldShowBreakdown = !!nonReimbursableSpend && !!reimbursableSpend;
+    const hasMixedTransactions = hasReimbursableAndNonReimbursableTransactions(report?.iouReportID);
+    const shouldShowBreakdownV2 = !!nonReimbursableSpend && !!reimbursableSpend && hasMixedTransactions;
+    useEffect(() => {
+        console.log('--- samranahm ---', { shouldShowBreakdown, shouldShowBreakdownV2, hasMixedTransactions });
+    }, [shouldShowBreakdown, shouldShowBreakdownV2, hasMixedTransactions]);
+
     const transactionsWithoutPendingDelete = useMemo(() => transactions.filter((t) => !isTransactionPendingDelete(t)), [transactions]);
     const currentUserDetails = useCurrentUserPersonalDetails();
     const isReportArchived = useReportIsArchived(report?.reportID);
