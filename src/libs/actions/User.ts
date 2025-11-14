@@ -645,16 +645,58 @@ function validateSecondaryLogin(
 }
 
 /**
- * Verify the validation code for adding a secondary login and get a short-lived auth token.
+ * Verify the validation code for adding a secondary login within the contact method flow.
  *
- * This method verifies a validation code that was sent to the user's primary email
- * and returns a short-lived auth token (1 minute) with TYPE_CAN_ADD_SECONDARY_LOGIN
- * permissions that can be used specifically for adding a secondary login.
+ * This handles the complete flow for verifying a secondary login:
+ * 1. Verifies the validation code entered by the user 
+ * 2. On success, stores the validate code to allow adding the new email
+ * 3. On failure, updates the state to reflect the failed verification
+ *
+ * @param validateCode - The validation code entered by the user
  */
-function verifyAddSecondaryLogin(authToken: string, validateCode: string) {
-    const parameters: VerifyAddSecondaryLoginParams = {authToken, validateCode};
+function verifyAddSecondaryLoginCode(validateCode: string) {
+    const optimisticData: OnyxUpdate[] = [
+        {
+            onyxMethod: Onyx.METHOD.MERGE,
+            key: ONYXKEYS.PENDING_CONTACT_ACTION,
+            value: {
+                validateActionCode: validateCode,
+                errorFields: {
+                    validateActionCode: null,
+                },
+            },
+        },
+    ];
 
-    API.write(WRITE_COMMANDS.VERIFY_ADD_SECONDARY_LOGIN, parameters);
+    const successData: OnyxUpdate[] = [
+        {
+            onyxMethod: Onyx.METHOD.MERGE,
+            key: ONYXKEYS.PENDING_CONTACT_ACTION,
+            value: {
+                validateActionCode: validateCode,
+                actionVerified: true,
+                isVerifiedValidateActionCode: true,
+                errorFields: {
+                    validateActionCode: null,
+                },
+            },
+        },
+    ];
+
+    const failureData: OnyxUpdate[] = [
+        {
+            onyxMethod: Onyx.METHOD.MERGE,
+            key: ONYXKEYS.PENDING_CONTACT_ACTION,
+            value: {
+                actionVerified: false,
+                isVerifiedValidateActionCode: false,
+            },
+        },
+    ];
+
+    const parameters: VerifyAddSecondaryLoginParams = {validateCode};
+
+    API.write(WRITE_COMMANDS.VERIFY_ADD_SECONDARY_LOGIN_CODE, parameters, {optimisticData, successData, failureData});
 }
 
 /**
@@ -1501,7 +1543,8 @@ export {
     clearContactMethod,
     addNewContactMethod,
     validateSecondaryLogin,
-    verifyAddSecondaryLogin,
+
+    verifyAddSecondaryLoginCode,
     isBlockedFromConcierge,
     subscribeToUserEvents,
     updatePreferredSkinTone,
