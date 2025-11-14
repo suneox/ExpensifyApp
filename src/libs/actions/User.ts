@@ -24,6 +24,7 @@ import type {
     UpdateStatusParams,
     UpdateThemeParams,
     ValidateSecondaryLoginParams,
+    VerifyAddSecondaryLoginParams,
 } from '@libs/API/parameters';
 import type LockAccountParams from '@libs/API/parameters/LockAccountParams';
 import {READ_COMMANDS, SIDE_EFFECT_REQUEST_COMMANDS, WRITE_COMMANDS} from '@libs/API/types';
@@ -641,6 +642,19 @@ function validateSecondaryLogin(
     const parameters: ValidateSecondaryLoginParams = {partnerUserID: contactMethod, validateCode};
 
     API.write(WRITE_COMMANDS.VALIDATE_SECONDARY_LOGIN, parameters, {optimisticData, successData, failureData});
+}
+
+/**
+ * Verify the validation code for adding a secondary login and get a short-lived auth token.
+ *
+ * This method verifies a validation code that was sent to the user's primary email
+ * and returns a short-lived auth token (1 minute) with TYPE_CAN_ADD_SECONDARY_LOGIN
+ * permissions that can be used specifically for adding a secondary login.
+ */
+function verifyAddSecondaryLogin(authToken: string, validateCode: string) {
+    const parameters: VerifyAddSecondaryLoginParams = {authToken, validateCode};
+
+    API.write(WRITE_COMMANDS.VERIFY_ADD_SECONDARY_LOGIN, parameters);
 }
 
 /**
@@ -1487,6 +1501,7 @@ export {
     clearContactMethod,
     addNewContactMethod,
     validateSecondaryLogin,
+    verifyAddSecondaryLogin,
     isBlockedFromConcierge,
     subscribeToUserEvents,
     updatePreferredSkinTone,

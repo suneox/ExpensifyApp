@@ -82,6 +82,7 @@ const WRITE_COMMANDS = {
     ADD_NEW_CONTACT_METHOD: 'AddNewContactMethod',
     VALIDATE_LOGIN: 'ValidateLogin',
     VALIDATE_SECONDARY_LOGIN: 'ValidateSecondaryLogin',
+    VERIFY_ADD_SECONDARY_LOGIN: 'VerifyAddSecondaryLogin',
     UPDATE_PREFERRED_EMOJI_SKIN_TONE: 'UpdatePreferredEmojiSkinTone',
     UPDATE_CHAT_PRIORITY_MODE: 'UpdateChatPriorityMode',
     TOGGLE_PLATFORM_MUTE: 'TogglePlatformMute',
@@ -574,6 +575,7 @@ type WriteCommandParameters = {
     [WRITE_COMMANDS.ADD_NEW_CONTACT_METHOD]: Parameters.AddNewContactMethodParams;
     [WRITE_COMMANDS.VALIDATE_LOGIN]: Parameters.ValidateLoginParams;
     [WRITE_COMMANDS.VALIDATE_SECONDARY_LOGIN]: Parameters.ValidateSecondaryLoginParams;
+    [WRITE_COMMANDS.VERIFY_ADD_SECONDARY_LOGIN]: Parameters.VerifyAddSecondaryLoginParams;
     [WRITE_COMMANDS.UPDATE_PREFERRED_EMOJI_SKIN_TONE]: Parameters.UpdatePreferredEmojiSkinToneParams;
     [WRITE_COMMANDS.UPDATE_CHAT_PRIORITY_MODE]: Parameters.UpdateChatPriorityModeParams;
     [WRITE_COMMANDS.SET_CONTACT_METHOD_AS_DEFAULT]: Parameters.SetContactMethodAsDefaultParams;

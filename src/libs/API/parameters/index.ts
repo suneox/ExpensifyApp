@@ -108,6 +108,7 @@ export type {default as UpdateRoomAvatarParams} from './UpdateRoomAvatarParams';
 export type {default as ValidateBankAccountWithTransactionsParams} from './ValidateBankAccountWithTransactionsParams';
 export type {default as ValidateLoginParams} from './ValidateLoginParams';
 export type {default as ValidateSecondaryLoginParams} from './ValidateSecondaryLoginParams';
+export type {default as VerifyAddSecondaryLoginParams} from './VerifyAddSecondaryLoginParams';
 export type {default as ValidateTwoFactorAuthParams} from './ValidateTwoFactorAuthParams';
 export type {default as DisableTwoFactorAuthParams} from './DisableTwoFactorAuthParams';
 export type {default as VerifyIdentityForBankAccountParams} from './VerifyIdentityForBankAccountParams';
