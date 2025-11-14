@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ValidateCodeActionContent from '@components/ValidateCodeActionModal/ValidateCodeActionContent';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
@@ -23,6 +23,13 @@ function NewContactMethodConfirmMagicCodePage({route}: NewContactMethodConfirmMa
 
     const [pendingContactAction] = useOnyx(ONYXKEYS.PENDING_CONTACT_ACTION, {canBeMissing: false});
     const validateCodeError = getLatestErrorField(pendingContactAction, 'addedLogin');
+
+    useEffect(() => {   
+        if (!pendingContactAction?.isVerifiedValidateActionCode) {
+            return;
+        }
+        Navigation.navigate(ROUTES.SETTINGS_NEW_CONTACT_METHOD.getRoute(navigateBackTo));
+    }, [pendingContactAction?.isVerifiedValidateActionCode]);
 
     return (
         <ValidateCodeActionContent

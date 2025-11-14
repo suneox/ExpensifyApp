@@ -380,8 +380,12 @@ function addNewContactMethod(contactMethod: string, validateCode = '') {
         },
         {
             onyxMethod: Onyx.METHOD.MERGE,
-            key: ONYXKEYS.ACCOUNT,
-            value: {isLoading: true},
+            key: ONYXKEYS.FORMS.NEW_CONTACT_METHOD_FORM,
+            value: {
+                isLoading: true,
+                errors: null,
+                errorFields: null,
+            },
         },
     ];
     const successData: OnyxUpdate[] = [
@@ -389,30 +393,42 @@ function addNewContactMethod(contactMethod: string, validateCode = '') {
             onyxMethod: Onyx.METHOD.MERGE,
             key: ONYXKEYS.PENDING_CONTACT_ACTION,
             value: {
-                contactMethod: null,
+                contactMethod,
                 validateCodeSent: null,
+                validateActionCode: null,
                 actionVerified: true,
+                isVerifiedValidateActionCode: false,
                 errorFields: {
-                    actionVerified: null,
+                    phoneOrEmail: null,
                 },
             },
         },
         {
             onyxMethod: Onyx.METHOD.MERGE,
-            key: ONYXKEYS.ACCOUNT,
-            value: {isLoading: false},
+            key: ONYXKEYS.FORMS.NEW_CONTACT_METHOD_FORM,
+            value: {
+                isLoading: false,
+                errors: null,
+                errorFields: null,
+            },
         },
     ];
     const failureData: OnyxUpdate[] = [
         {
             onyxMethod: Onyx.METHOD.MERGE,
-            key: ONYXKEYS.ACCOUNT,
-            value: {isLoading: false},
+            key: ONYXKEYS.FORMS.NEW_CONTACT_METHOD_FORM,
+            value: {
+                isLoading: false,
+            },
         },
         {
             onyxMethod: Onyx.METHOD.MERGE,
-            key: ONYXKEYS.VALIDATE_ACTION_CODE,
-            value: {validateCodeSent: null},
+            key: ONYXKEYS.PENDING_CONTACT_ACTION,
+            value: {
+                errorFields: {
+                    phoneOrEmail: null,
+                },
+            },
         },
     ];
 
