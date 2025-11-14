@@ -24,7 +24,7 @@ import type {
     UpdateStatusParams,
     UpdateThemeParams,
     ValidateSecondaryLoginParams,
-    VerifyAddSecondaryLoginParams,
+    VerifyAddSecondaryLoginCodeParams,
 } from '@libs/API/parameters';
 import type LockAccountParams from '@libs/API/parameters/LockAccountParams';
 import {READ_COMMANDS, SIDE_EFFECT_REQUEST_COMMANDS, WRITE_COMMANDS} from '@libs/API/types';
@@ -655,6 +655,7 @@ function validateSecondaryLogin(
  * @param validateCode - The validation code entered by the user
  */
 function verifyAddSecondaryLoginCode(validateCode: string) {
+    resetValidateActionCodeSent();
     const optimisticData: OnyxUpdate[] = [
         {
             onyxMethod: Onyx.METHOD.MERGE,
@@ -694,7 +695,7 @@ function verifyAddSecondaryLoginCode(validateCode: string) {
         },
     ];
 
-    const parameters: VerifyAddSecondaryLoginParams = {validateCode};
+    const parameters: VerifyAddSecondaryLoginCodeParams = {validateCode};
 
     API.write(WRITE_COMMANDS.VERIFY_ADD_SECONDARY_LOGIN_CODE, parameters, {optimisticData, successData, failureData});
 }
@@ -1543,7 +1544,6 @@ export {
     clearContactMethod,
     addNewContactMethod,
     validateSecondaryLogin,
-
     verifyAddSecondaryLoginCode,
     isBlockedFromConcierge,
     subscribeToUserEvents,
