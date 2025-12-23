@@ -741,6 +741,21 @@ function Search({
 
     const onSelectRow = useCallback(
         (item: SearchListItem, transactionPreviewData?: TransactionPreviewData) => {
+            console.log(`*** onSelectRow ***`, { isMobileSelectionModeEnabled });
+            console.log(`*** bernhardoj: ${isTransactionCardGroupListItemType(item) ? '[PASSED]' : '[FAILED]'} ***`);
+            if (isTransactionCardGroupListItemType(item)) {
+                const newFlatFilters = queryJSON.flatFilters.filter((filter) => filter.key !== CONST.SEARCH.SYNTAX_FILTER_KEYS.CARD_ID);
+                newFlatFilters.push({ key: CONST.SEARCH.SYNTAX_FILTER_KEYS.CARD_ID, filters: [{ operator: CONST.SEARCH.SYNTAX_OPERATORS.EQUAL_TO, value: item.cardID }] });
+                const newQueryJSON: SearchQueryJSON = { ...queryJSON, groupBy: undefined, flatFilters: newFlatFilters };
+                const newQuery = buildSearchQueryString(newQueryJSON);
+                const newQueryJSONWithHash = buildSearchQueryJSON(newQuery);
+                if (!newQueryJSONWithHash) {
+                    return;
+                }
+                handleSearch({ queryJSON: newQueryJSONWithHash, searchKey, offset: 0, shouldCalculateTotals: false, isLoading: false });
+                return;
+            }
+
             if (isMobileSelectionModeEnabled) {
                 toggleTransaction(item);
                 return;
@@ -757,7 +772,7 @@ function Search({
                     return;
                 }
             }
-
+            console.log(`*** isTransactionMemberGroupListItemType ***`, isTransactionMemberGroupListItemType(item));
             if (isTransactionMemberGroupListItemType(item)) {
                 const newFlatFilters = queryJSON.flatFilters.filter((filter) => filter.key !== CONST.SEARCH.SYNTAX_FILTER_KEYS.FROM);
                 newFlatFilters.push({key: CONST.SEARCH.SYNTAX_FILTER_KEYS.FROM, filters: [{operator: CONST.SEARCH.SYNTAX_OPERATORS.EQUAL_TO, value: item.accountID}]});

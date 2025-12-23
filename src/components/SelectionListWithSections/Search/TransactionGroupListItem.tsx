@@ -191,14 +191,25 @@ function TransactionGroupListItem<TItem extends ListItem>({
         }
     }, [isExpanded]);
 
+    const [isMobileSelectionModeEnabled] = useOnyx(ONYXKEYS.MOBILE_SELECTION_MODE, { canBeMissing: true });
+
     const onPress = useCallback(() => {
+        console.log(`*** onPress ***`, { isExpenseReportType, transactionsLength: transactions.length });
+        if (isMobileSelectionModeEnabled && !isLargeScreenWidth) {
+            console.log(`*** [FAILED] btkcodedev ***`);
+            // return;
+        }
         if (isExpenseReportType || transactions.length === 0) {
             onSelectRow(item, transactionPreviewData);
         }
         if (!isExpenseReportType) {
+            if (groupItem.transactionsQueryJSON && !isExpanded) {
+                console.log(`*** [PASSED] mohammadjafarinejad: searchTransactions ***`);
+                // searchTransactions();
+            }
             handleToggle();
         }
-    }, [isExpenseReportType, transactions.length, onSelectRow, transactionPreviewData, item, handleToggle]);
+    }, [isExpenseReportType, transactions.length, isMobileSelectionModeEnabled, isLargeScreenWidth, onSelectRow, item, transactionPreviewData, groupItem.transactionsQueryJSON, isExpanded, handleToggle, searchTransactions]);
 
     const onLongPress = useCallback(() => {
         if (isEmpty) {
@@ -222,13 +233,16 @@ function TransactionGroupListItem<TItem extends ListItem>({
     );
 
     const onExpandIconPress = useCallback(() => {
+        console.log(`*** onExpandIconPress ***`, { isMobileSelectionModeEnabled, isEmpty, shouldDisplayEmptyView, isExpanded, transactionsQueryJSON: groupItem.transactionsQueryJSON });
         if (isEmpty && !shouldDisplayEmptyView) {
+            // if (isEmpty && !shouldDisplayEmptyView && !isMobileSelectionModeEnabled) { // nkdengineer
             onPress();
         } else if (groupItem.transactionsQueryJSON && !isExpanded) {
+            console.log(`*** [PASSED] nkdengineer: searchTransactions ***`);
             searchTransactions();
         }
         handleToggle();
-    }, [isEmpty, shouldDisplayEmptyView, groupItem.transactionsQueryJSON, isExpanded, handleToggle, onPress, searchTransactions]);
+    }, [isEmpty, shouldDisplayEmptyView, groupItem.transactionsQueryJSON, isExpanded, handleToggle, onPress, searchTransactions, isMobileSelectionModeEnabled]);
 
     const getHeader = useCallback(
         (hovered: boolean) => {
