@@ -2994,10 +2994,23 @@ function getMoneyRequestInformation(moneyRequestInformation: MoneyRequestInforma
     } else if (isPolicyExpenseChat) {
         iouReport = {...iouReport};
         // Because of the Expense reports are stored as negative values, we subtract the total from the amount
-        if (iouReport?.currency === currency) {
+
+        // Previous change: Check if currencies match exactly
+        // if (iouReport?.currency === currency) {
+
+        // New code: Accept newReportTotal even when currencies differ (for multi-currency splits)
+        const currenciesMatch = iouReport?.currency === currency;
+        if (currenciesMatch || newReportTotal) {
             if (!Number.isNaN(iouReport.total) && iouReport.total !== undefined) {
-                // Use newReportTotal in scenarios where the total is based on more than just the current transaction, and we need to override it manually
                 if (newReportTotal) {
+                    // LORRE: Part 1 - Manual override for multi-currency
+                    console.log('[LORRE] Part 1: Override total', {
+                        reportCurrency: iouReport?.currency,
+                        transactionCurrency: currency,
+                        currenciesMatch,
+                        newReportTotal,
+                        finalTotal: iouReport.total
+                    });
                     iouReport.total = newReportTotal;
                 } else {
                     iouReport.total -= amount;
@@ -3006,7 +3019,9 @@ function getMoneyRequestInformation(moneyRequestInformation: MoneyRequestInforma
                 if (!reimbursable) {
                     if (newNonReimbursableTotal !== undefined) {
                         iouReport.nonReimbursableTotal = newNonReimbursableTotal;
-                    } else {
+                    // Previous change
+                    // } else {
+                    } else if (currenciesMatch) {
                         iouReport.nonReimbursableTotal = (iouReport.nonReimbursableTotal ?? 0) - amount;
                     }
                 }
@@ -3082,6 +3097,30 @@ function getMoneyRequestInformation(moneyRequestInformation: MoneyRequestInforma
     if (isSplitExpense && existingTransaction) {
         const {convertedAmount: omittedConvertedAmount, ...existingTransactionWithoutConvertedAmount} = existingTransaction;
         optimisticTransaction = fastMerge(existingTransactionWithoutConvertedAmount, optimisticTransaction, false);
+        // Remove convertedAmount to preserve fix for #76078 (avoid doubled totals)
+        const { convertedAmount: originalConvertedAmount } = existingTransaction;
+
+        // Calculate proportional convertedAmount for the split to maintain correct exchange rate
+        // This fixes #78814 where split transactions without convertedAmount are skipped in calculateGroupTotal
+        const originalAmount = existingTransaction.modifiedAmount ?? existingTransaction.amount;
+        const splitAmount = optimisticTransaction.modifiedAmount ?? optimisticTransaction.amount;
+
+        console.log('[TADUJR] Calculate proportional', {
+            originalAmount,
+            originalConverted: originalConvertedAmount,
+            splitAmount
+        });
+
+        if (originalConvertedAmount && originalAmount && splitAmount) {
+            const proportionalConverted = Math.round((originalConvertedAmount * splitAmount) / originalAmount);
+            console.log('[TADUJR] Result', {
+                proportionalConverted,
+                transactionID: optimisticTransaction.transactionID,
+                applied: false // Currently commented out for testing
+            });
+            // [TADUJR:Verify] enable this line to verify
+            // optimisticTransaction.convertedAmount = proportionalConverted;
+        }
     }
 
     // STEP 4: Build optimistic reportActions. We need:
@@ -13823,6 +13862,21 @@ function updateSplitTransactions({
         }
     }
 
+
+    // For multi-currency transactions, use original convertedAmount as base
+    const isMultiCurrency = originalTransactionDetails?.currency && expenseReport?.currency && originalTransactionDetails.currency !== expenseReport.currency;
+
+    // LORRE: Part 2 - Set reportTotals with original convertedAmount for multi-currency
+    if (isMultiCurrency && originalTransaction?.convertedAmount && expenseReport?.reportID) {
+        console.log('[LORRE] Part 2: Set reportTotals', {
+            originalCurrency: originalTransactionDetails?.currency,
+            reportCurrency: expenseReport?.currency,
+            originalConverted: originalTransaction.convertedAmount,
+            reportID: expenseReport.reportID
+        });
+        reportTotals.set(expenseReport.reportID, originalTransaction.convertedAmount);
+    }
+
     for (const [index, splitExpense] of splitExpenses.entries()) {
         const existingTransactionID = isReverseSplitOperation ? originalTransactionID : splitExpense.transactionID;
         const splitTransaction = allTransactionsList?.[`${ONYXKEYS.COLLECTION.TRANSACTION}${existingTransactionID}`];
@@ -13897,7 +13951,7 @@ function updateSplitTransactions({
         const {participantParams, policyParams, transactionParams, parentChatReport, existingTransaction} = requestMoneyInformation;
         const parsedComment = getParsedComment(Parser.htmlToMarkdown(transactionParams.comment ?? ''));
         transactionParams.comment = parsedComment;
-
+        console.log(`*** [Step:01] [UpdateSplitTransactions] getMoneyRequestInformation ***`);
         const {transactionThreadReportID, createdReportActionIDForThread, onyxData, iouAction} = getMoneyRequestInformation({
             participantParams,
             parentChatReport,
