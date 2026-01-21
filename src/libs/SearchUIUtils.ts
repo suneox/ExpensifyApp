@@ -117,6 +117,7 @@ import {buildCannedSearchQuery, buildQueryStringFromFilterFormValues, buildSearc
 import StringUtils from './StringUtils';
 import {getIOUPayerAndReceiver} from './TransactionPreviewUtils';
 import {
+    getAmount,
     getCategory,
     getDescription,
     getExchangeRate,
@@ -1228,13 +1229,25 @@ function getToFieldValueForTransaction(
         if (originalMessage?.type === CONST.IOU.REPORT_ACTION_TYPE.PAY && report.ownerAccountID) {
             return personalDetailsList?.[report.ownerAccountID] ?? emptyPersonalDetails;
         }
+        const actorAccountID = reportAction.actorAccountID;
+        const participantAccountIDs = originalMessage?.participantAccountIDs;
+        console.log(`-[SearchUIUtils]:annaweber830`, {managerID: report?.managerID, type: report?.type}, {participantAccountIDs, actorAccountID}, reportAction);
+        if (actorAccountID && participantAccountIDs && participantAccountIDs.length === 2) {
+            const otherParticipantAccountID = participantAccountIDs.find((accountID) => accountID !== actorAccountID);
+            if (otherParticipantAccountID) {
+                // return personalDetailsList?.[otherParticipantAccountID] ?? emptyPersonalDetails;
+            }
+        }
     }
 
     if (report?.managerID) {
         const isIOUReport = report?.type === CONST.REPORT.TYPE.IOU;
         if (isIOUReport) {
+            console.log(`-[SearchUIUtils]:nkdengineer`, getAmount(transactionItem), transactionItem.amount);
             return (
-                getIOUPayerAndReceiver(report?.managerID ?? CONST.DEFAULT_NUMBER_ID, report?.ownerAccountID ?? CONST.DEFAULT_NUMBER_ID, personalDetailsList, transactionItem.amount)?.to ??
+                // getIOUPayerAndReceiver(report?.managerID ?? CONST.DEFAULT_NUMBER_ID, report?.ownerAccountID ?? CONST.DEFAULT_NUMBER_ID, personalDetailsList, transactionItem.amount)?.to ??
+                // getIOUPayerAndReceiver(report?.managerID ?? CONST.DEFAULT_NUMBER_ID, report?.ownerAccountID ?? CONST.DEFAULT_NUMBER_ID, personalDetailsList, getAmount(transactionItem))?.to ??
+                getIOUPayerAndReceiver(report?.managerID ?? CONST.DEFAULT_NUMBER_ID, report?.ownerAccountID ?? CONST.DEFAULT_NUMBER_ID, personalDetailsList, transactionItem.modifiedAmount as number ?? transactionItem.amount)?.to ??
                 emptyPersonalDetails
             );
         }
