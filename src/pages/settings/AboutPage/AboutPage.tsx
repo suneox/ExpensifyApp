@@ -145,7 +145,7 @@ function AboutPage() {
             testID="AboutPage"
         >
             <HeaderWithBackButton
-                title={translate('initialSettingsPage.about')}
+                title={'Verify 74858'}
                 shouldShowBackButton={shouldUseNarrowLayout}
                 shouldDisplaySearchRouter
                 onBackButtonPress={Navigation.popToSidebar}
