@@ -18,6 +18,7 @@ import ConfirmModal from './ConfirmModal';
 import Icon from './Icon';
 import RenderHTML from './RenderHTML';
 import Text from './Text';
+import CONST from '@src/CONST';
 
 type DotIndicatorMessageProps = {
     /**
@@ -78,6 +79,23 @@ function DotIndicatorMessage({messages = {}, style, type, textStyles, dismissErr
         }
     };
 
+    const errorIconLabel = isErrorMessage
+      ? [
+            CONST.ACCESSIBILITY_LABELS.ERROR,
+            // ...uniqueMessages
+            //     .map((message) => {
+            //         if (isReceiptError(message)) {
+            //             return translate('iou.error.receiptFailureMessageShort');
+            //         }
+            //         if (isTranslationKeyError(message)) {
+            //             return translate(message.translationKey);
+            //         }
+            //         return message;
+            //     })
+            //     .filter(Boolean),
+        ].join(' ')
+      : undefined;
+
     const renderMessage = (message: string | ReceiptError | ReactElement, index: number) => {
         if (isReceiptError(message)) {
             return (
@@ -118,7 +136,7 @@ function DotIndicatorMessage({messages = {}, style, type, textStyles, dismissErr
 
     return (
         <View style={[styles.dotIndicatorMessage, style]}>
-            <View style={styles.offlineFeedbackErrorDot}>
+            <View style={styles.offlineFeedbackErrorDot} accessible={isErrorMessage} accessibilityRole={isErrorMessage ? 'image' : undefined} accessibilityLabel={errorIconLabel}>
                 <Icon
                     src={expensifyIcons.DotIndicator}
                     fill={isErrorMessage ? theme.danger : theme.success}

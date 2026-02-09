@@ -58,14 +58,21 @@ function FormHelpMessage({message = '', children, isError = true, style, shouldS
     }
 
     const shouldAnnounceError = isError && typeof message === 'string' && !!message && !shouldRenderMessageAsHTML && children == null;
+    const errorIconLabel = isError && shouldShowRedDotIndicator ? [
+        CONST.ACCESSIBILITY_LABELS.ERROR, 
+        // typeof message === 'string' ? message : ''
+    ]
+    .filter(Boolean).join(' ') : undefined;
 
     return (
         <View style={[styles.flexRow, styles.alignItemsCenter, styles.mt2, styles.mb1, style]}>
             {isError && shouldShowRedDotIndicator && (
-                <Icon
-                    src={icons.DotIndicator}
-                    fill={theme.danger}
-                />
+                <View accessible accessibilityRole="image" accessibilityLabel={errorIconLabel}>
+                    <Icon
+                        src={icons.DotIndicator}
+                        fill={theme.danger}
+                    />
+                </View>
             )}
             {isInfo && (
                 <Icon
