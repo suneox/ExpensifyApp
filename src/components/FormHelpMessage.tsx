@@ -6,6 +6,7 @@ import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 import Parser from '@libs/Parser';
+import CONST from '@src/CONST';
 import Icon from './Icon';
 import RenderHTML from './RenderHTML';
 import Text from './Text';
@@ -56,6 +57,8 @@ function FormHelpMessage({message = '', children, isError = true, style, shouldS
         return null;
     }
 
+    const shouldAnnounceError = isError && typeof message === 'string' && !!message && !shouldRenderMessageAsHTML && children == null;
+
     return (
         <View style={[styles.flexRow, styles.alignItemsCenter, styles.mt2, styles.mb1, style]}>
             {isError && shouldShowRedDotIndicator && (
@@ -73,7 +76,7 @@ function FormHelpMessage({message = '', children, isError = true, style, shouldS
                 />
             )}
             <View style={[styles.flex1, isError && shouldShowRedDotIndicator ? styles.ml2 : {}]}>
-                {children ?? (shouldRenderMessageAsHTML ? <RenderHTML html={HTMLMessage} /> : <Text style={[isError ? styles.formError : styles.formHelp, styles.mb0]}>{message}</Text>)}
+                {children ?? (shouldRenderMessageAsHTML ? <RenderHTML html={HTMLMessage} /> : <Text accessibilityRole={shouldAnnounceError ? CONST.ROLE.ALERT : undefined} accessibilityLiveRegion={shouldAnnounceError ? 'assertive' : undefined} style={[isError ? styles.formError : styles.formHelp, styles.mb0]}>{message}</Text>)}
             </View>
         </View>
     );
