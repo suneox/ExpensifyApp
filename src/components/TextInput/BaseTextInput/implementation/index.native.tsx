@@ -28,6 +28,8 @@ import useThemeStyles from '@hooks/useThemeStyles';
 import isInputAutoFilled from '@libs/isInputAutoFilled';
 import variables from '@styles/variables';
 import CONST from '@src/CONST';
+import {AccessibilityInfo} from 'react-native';
+import Accessibility from '@libs/Accessibility';
 
 function BaseTextInput({
     label = '',
@@ -281,6 +283,25 @@ function BaseTextInput({
     // Height fix is needed only for Text single line inputs
     const shouldApplyHeight = !shouldUseFullInputHeight && !isMultiline && !isMarkdownEnabled;
     const accessibilityLabel = [label, hint].filter(Boolean).join(', ');
+
+    const isScreenReaderEnabled = Accessibility.useScreenReaderStatus();
+    const lastAnnouncedErrorTextRef = useRef('');
+
+    useEffect(() => {
+        if (!isFocused || !isScreenReaderEnabled) {
+            return;
+        }
+        const trimmedErrorText = errorText.trim();
+        if (!trimmedErrorText) {
+            lastAnnouncedErrorTextRef.current = '';
+            return;
+        }
+        if (trimmedErrorText === lastAnnouncedErrorTextRef.current) {
+            return;
+        }
+        lastAnnouncedErrorTextRef.current = trimmedErrorText;
+        AccessibilityInfo.announceForAccessibility(trimmedErrorText);
+    }, [errorText, isFocused, isScreenReaderEnabled]);
 
     return (
         <>
