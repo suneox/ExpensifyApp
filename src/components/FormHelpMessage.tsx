@@ -1,7 +1,7 @@
 import isEmpty from 'lodash/isEmpty';
 import React, {useEffect, useMemo, useRef} from 'react';
 import type {StyleProp, ViewStyle} from 'react-native';
-import {AccessibilityInfo, View} from 'react-native';
+import {AccessibilityInfo, Alert, View} from 'react-native';
 import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
@@ -35,6 +35,8 @@ type FormHelpMessageProps = {
     isInfo?: boolean;
 };
 
+const DELAY_FOR_ACCESSIBILITY_TREE_SYNC = 100;
+
 function FormHelpMessage({message = '', children, isError = true, style, shouldShowRedDotIndicator = true, shouldRenderMessageAsHTML = false, isInfo = false}: FormHelpMessageProps) {
     const theme = useTheme();
     const styles = useThemeStyles();
@@ -59,7 +61,12 @@ function FormHelpMessage({message = '', children, isError = true, style, shouldS
     }, [isError, message, shouldRenderMessageAsHTML]);
 
     useEffect(() => {
-        if (!isIOS || !shouldAnnounceError || typeof message !== 'string' || !message.trim()) {
+        if (!isIOS || !shouldAnnounceError) {
+            return;
+        }
+        if (typeof message !== 'string' || !message.trim()) {
+            console.log(`-[FormHelpMessage]:Reset:previousAnnouncedMessage`);
+            previousAnnouncedMessageRef.current = '';
             return;
         }
 
@@ -68,7 +75,10 @@ function FormHelpMessage({message = '', children, isError = true, style, shouldS
         }
 
         previousAnnouncedMessageRef.current = message;
-        AccessibilityInfo.announceForAccessibility(message);
+        setTimeout(() => {
+            console.log(`-[FormHelpMessage]:AccessibilityInfo.announceForAccessibility`);
+            AccessibilityInfo.announceForAccessibility(message);
+        }, 100)
     }, [isIOS, message, shouldAnnounceError]);
 
     const errorIconLabel = isError && shouldShowRedDotIndicator ? CONST.ACCESSIBILITY_LABELS.ERROR : undefined;

@@ -152,7 +152,7 @@ function AboutPage() {
             testID="AboutPage"
         >
             <HeaderWithBackButton
-                title={translate('initialSettingsPage.about')}
+                title={'pull/81679'}
                 shouldShowBackButton={shouldUseNarrowLayout}
                 shouldDisplaySearchRouter
                 onBackButtonPress={Navigation.goBack}
