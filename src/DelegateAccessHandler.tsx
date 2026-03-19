@@ -29,14 +29,34 @@ function DelegateAccessHandler() {
 
     // Disconnect delegate when the delegate is no longer in the delegates list
     useEffect(() => {
+        // eslint-disable-next-line no-console -- Debug logging for issue #84186
+        console.log('[DelegateAccessHandler] Check', {
+            hasDelegate: !!account?.delegatedAccess?.delegate,
+            delegateEmail: account?.delegatedAccess?.delegate,
+            delegates: account?.delegatedAccess?.delegates?.map((d) => d.email),
+            disconnectInProgress: account?.delegatedAccess?.errorFields?.disconnect === null,
+        });
+
         if (!account?.delegatedAccess?.delegate) {
+            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+            console.log('[DelegateAccessHandler] No delegate, skipping');
+            return;
+        }
+        if (account?.delegatedAccess?.errorFields?.disconnect === null) {
+            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+            console.log('[DelegateAccessHandler] Disconnect in progress, skipping to prevent double-disconnect');
             return;
         }
         if (account?.delegatedAccess?.delegates?.some((d) => d.email === account?.delegatedAccess?.delegate)) {
+            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+            console.log('[DelegateAccessHandler] Delegate still in list, skipping');
             return;
         }
+
+        // eslint-disable-next-line no-console -- Debug logging for issue #84186
+        console.log('[DelegateAccessHandler] Triggering disconnect for delegate:', account?.delegatedAccess?.delegate);
         disconnect({stashedCredentials, stashedSession});
-    }, [account?.delegatedAccess?.delegates, account?.delegatedAccess?.delegate, stashedCredentials, stashedSession]);
+    }, [account?.delegatedAccess?.delegates, account?.delegatedAccess?.delegate, account?.delegatedAccess?.errorFields?.disconnect, stashedCredentials, stashedSession]);
 
     // Log delegate mismatch after the app has loaded
     useEffect(() => {

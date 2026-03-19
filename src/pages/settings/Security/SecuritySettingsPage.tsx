@@ -29,7 +29,7 @@ import useResponsiveLayout from '@hooks/useResponsiveLayout';
 import useThemeStyles from '@hooks/useThemeStyles';
 import useWaitForNavigation from '@hooks/useWaitForNavigation';
 import useWindowDimensions from '@hooks/useWindowDimensions';
-import {clearDelegateErrorsByField, openSecuritySettingsPage, removeDelegate} from '@libs/actions/Delegate';
+import {clearDelegateErrorsByField, openSecuritySettingsPage, removeCurrentDelegateAndDisconnect, removeDelegate} from '@libs/actions/Delegate';
 import {getLatestError} from '@libs/ErrorUtils';
 import getClickedTargetLocation from '@libs/getClickedTargetLocation';
 import Navigation from '@libs/Navigation/Navigation';
@@ -80,6 +80,8 @@ function SecuritySettingsPage() {
     const {windowWidth} = useWindowDimensions();
     const personalDetails = usePersonalDetails();
     const [account] = useOnyx(ONYXKEYS.ACCOUNT);
+    const [stashedCredentials = CONST.EMPTY_OBJECT] = useOnyx(ONYXKEYS.STASHED_CREDENTIALS);
+    const [stashedSession] = useOnyx(ONYXKEYS.STASHED_SESSION);
     const currentUserPersonalDetails = useCurrentUserPersonalDetails();
     const privateSubscription = usePrivateSubscription();
     const isUserValidated = account?.validated;
@@ -386,7 +388,28 @@ function SecuritySettingsPage() {
                                 showDelegateNoAccessModal();
                                 return;
                             }
-                            removeDelegate({email: selectedDelegate?.email ?? '', delegatedAccess: account?.delegatedAccess});
+
+                            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+                            console.log('[SecuritySettingsPage] Remove copilot', {
+                                selectedEmail: selectedDelegate?.email,
+                                currentDelegate: account?.delegatedAccess?.delegate,
+                                isRemovingSelf: selectedDelegate?.email === account?.delegatedAccess?.delegate,
+                            });
+
+                            if (selectedDelegate?.email === account?.delegatedAccess?.delegate) {
+                                // eslint-disable-next-line no-console -- Debug logging for issue #84186
+                                console.log('[SecuritySettingsPage] Removing SELF - calling removeCurrentDelegateAndDisconnect');
+                                removeCurrentDelegateAndDisconnect({
+                                    email: selectedDelegate?.email ?? '',
+                                    delegatedAccess: account?.delegatedAccess,
+                                    stashedCredentials,
+                                    stashedSession,
+                                });
+                            } else {
+                                // eslint-disable-next-line no-console -- Debug logging for issue #84186
+                                console.log('[SecuritySettingsPage] Removing OTHER - calling removeDelegate');
+                                removeDelegate({email: selectedDelegate?.email ?? '', delegatedAccess: account?.delegatedAccess});
+                            }
                             setSelectedDelegate(undefined);
                         }
                     });

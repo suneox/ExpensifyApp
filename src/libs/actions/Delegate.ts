@@ -87,6 +87,8 @@ type WithActivePolicyID = {
 
 type DisconnectParams = WithStashedCredentials & WithStashedSession;
 
+type RemoveCurrentDelegateAndDisconnectParams = RemoveDelegateParams & DisconnectParams;
+
 // Clear delegator-level errors
 type ClearDelegatorErrorsParams = WithDelegatedAccess;
 
@@ -222,6 +224,12 @@ function connect({email, delegatedAccess, credentials, session, activePolicyID, 
 }
 
 function disconnect({stashedCredentials, stashedSession}: DisconnectParams) {
+    // eslint-disable-next-line no-console -- Debug logging for issue #84186
+    console.log('[Delegate - disconnect] START', {
+        hasStashedCredentials: !!stashedCredentials,
+        hasStashedSession: !!stashedSession,
+    });
+
     const optimisticData: Array<OnyxUpdate<typeof ONYXKEYS.ACCOUNT>> = [
         {
             onyxMethod: Onyx.METHOD.MERGE,
@@ -259,22 +267,37 @@ function disconnect({stashedCredentials, stashedSession}: DisconnectParams) {
     ];
 
     // We need to access the authToken directly from the response to update the session
+    // eslint-disable-next-line rulesdir/no-api-side-effects-method, no-console -- Debug logging for issue #84186
+    console.log('[Delegate - disconnect] Calling DISCONNECT_AS_DELEGATE API');
     // eslint-disable-next-line rulesdir/no-api-side-effects-method
-    API.makeRequestWithSideEffects(SIDE_EFFECT_REQUEST_COMMANDS.DISCONNECT_AS_DELEGATE, {}, {optimisticData, successData, failureData})
+    return API.makeRequestWithSideEffects(SIDE_EFFECT_REQUEST_COMMANDS.DISCONNECT_AS_DELEGATE, {}, {optimisticData, successData, failureData})
         .then((response) => {
+            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+            console.log('[Delegate - disconnect] API response received', {
+                hasAuthToken: !!response?.authToken,
+                hasRequesterEmail: !!response?.requesterEmail,
+                requesterEmail: response?.requesterEmail,
+            });
+
             if (!response?.authToken || !response?.encryptedAuthToken) {
+                // eslint-disable-next-line no-console -- Debug logging for issue #84186
+                console.log('[Delegate - disconnect] ERROR: No auth token');
                 Log.alert('[Delegate] No auth token returned while disconnecting as a delegate');
                 restoreDelegateSession(stashedSession ?? {});
-                return;
+                return false;
             }
 
             if (!response?.requesterID || !response?.requesterEmail) {
+                // eslint-disable-next-line no-console -- Debug logging for issue #84186
+                console.log('[Delegate - disconnect] ERROR: No requester data');
                 Log.alert('[Delegate] No requester data returned while disconnecting as a delegate');
                 restoreDelegateSession(stashedSession ?? {});
-                return;
+                return false;
             }
 
             clearPreservedSearchNavigatorStates();
+            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+            console.log('[Delegate - disconnect] Success! Restoring session for:', response.requesterEmail);
 
             const requesterEmail = response.requesterEmail;
             const authToken = response.authToken;
@@ -305,9 +328,11 @@ function disconnect({stashedCredentials, stashedSession}: DisconnectParams) {
                     Onyx.set(ONYXKEYS.STASHED_CREDENTIALS, {});
                     Onyx.set(ONYXKEYS.STASHED_SESSION, {});
                     confirmReadyToOpenApp();
-                    openApp().then(() => {
+                    return openApp().then(() => {
+                        // eslint-disable-next-line no-console -- Debug logging for issue #84186
+                        console.log('[Delegate - disconnect] App opened successfully, switching to:', requesterEmail);
                         if (!CONFIG.IS_HYBRID_APP) {
-                            return;
+                            return true;
                         }
                         HybridAppModule.switchAccount({
                             newDotCurrentAccountEmail: requesterEmail,
@@ -315,11 +340,15 @@ function disconnect({stashedCredentials, stashedSession}: DisconnectParams) {
                             policyID: '',
                             accountID: '',
                         });
+                        return true;
                     });
                 });
         })
         .catch((error) => {
+            // eslint-disable-next-line no-console -- Debug logging for issue #84186
+            console.log('[Delegate - disconnect] CATCH ERROR:', error);
             Log.alert('[Delegate] Error disconnecting as a delegate', {error});
+            return false;
         });
 }
 
@@ -560,6 +589,68 @@ function removeDelegate({email, delegatedAccess}: RemoveDelegateParams) {
     API.write(WRITE_COMMANDS.REMOVE_DELEGATE, parameters, {optimisticData, successData, failureData});
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- stashedCredentials and stashedSession are needed for the type but not used in the function body
+function removeCurrentDelegateAndDisconnect({email, delegatedAccess, stashedCredentials, stashedSession}: RemoveCurrentDelegateAndDisconnectParams) {
+    if (!email || !delegatedAccess?.delegates) {
+        return;
+    }
+
+    // eslint-disable-next-line no-console -- Debug logging for issue #84186
+    console.log('[Delegate - removeCurrentDelegateAndDisconnect] START', {
+        email,
+        delegatesBefore: delegatedAccess.delegates.map((d) => d.email),
+        currentDelegate: delegatedAccess.delegate,
+    });
+
+    const filteredDelegates = delegatedAccess.delegates.filter((delegate) => delegate.email !== email);
+
+    // eslint-disable-next-line no-console -- Debug logging for issue #84186
+    console.log('[Delegate - removeCurrentDelegateAndDisconnect] After filter', {
+        delegatesAfter: filteredDelegates.map((d) => d.email),
+        removed: email,
+    });
+
+    const optimisticData: Array<OnyxUpdate<typeof ONYXKEYS.ACCOUNT>> = [
+        {
+            onyxMethod: Onyx.METHOD.MERGE,
+            key: ONYXKEYS.ACCOUNT,
+            value: {
+                delegatedAccess: {
+                    errorFields: {
+                        removeDelegate: {
+                            [email]: null,
+                        },
+                    },
+                    delegates: filteredDelegates,
+                },
+            },
+        },
+    ];
+
+    const failureData: Array<OnyxUpdate<typeof ONYXKEYS.ACCOUNT>> = [
+        {
+            onyxMethod: Onyx.METHOD.MERGE,
+            key: ONYXKEYS.ACCOUNT,
+            value: {
+                delegatedAccess: {
+                    errorFields: {
+                        removeDelegate: {
+                            [email]: null,
+                        },
+                    },
+                    delegates: delegatedAccess.delegates,
+                },
+            },
+        },
+    ];
+
+    const parameters: APIRemoveDelegateParams = {delegateEmail: email};
+
+    // eslint-disable-next-line no-console -- Debug logging for issue #84186
+    console.log('[Delegate - removeCurrentDelegateAndDisconnect] Calling REMOVE_DELEGATE API');
+    API.write(WRITE_COMMANDS.REMOVE_DELEGATE, parameters, {optimisticData, failureData});
+}
+
 function clearDelegateErrorsByField({email, fieldName, delegatedAccess}: ClearDelegateErrorsByFieldParams) {
     if (!delegatedAccess?.delegates) {
         return;
@@ -724,6 +815,7 @@ export {
     clearDelegateRolePendingAction,
     updateDelegateRole,
     removeDelegate,
+    removeCurrentDelegateAndDisconnect,
     openSecuritySettingsPage,
     KEYS_TO_PRESERVE_DELEGATE_ACCESS,
 };
