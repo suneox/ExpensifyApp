@@ -406,32 +406,66 @@ function MoneyRequestReportActionsList({
         newestFetchedReportActionID: reportMetadata?.newestFetchedReportActionID,
     });
 
+    console.log('[#85647] [MoneyRequestReportActionsList] useLoadReportActions props:', {
+        reportID,
+        reportActionsCount: reportActions.length,
+        hasOlderActions,
+        hasNewerActions,
+        newestFetchedReportActionID: reportMetadata?.newestFetchedReportActionID,
+        isLoadingNewerReportActions: reportMetadata?.isLoadingNewerReportActions,
+        isLoadingInitialReportActions: reportMetadata?.isLoadingInitialReportActions,
+    });
+
     const hasFinishedInitialLoad = reportMetadata?.isLoadingInitialReportActions === false;
     const prevNewestFetchedIDRef = useRef<string | undefined>(undefined);
     useEffect(() => {
+        console.log('[#85647] [MoneyRequestReportActionsList] Auto-pagination useEffect:', {
+            hasFinishedInitialLoad,
+            hasNewerActions,
+            reportActionsLength: reportActions.length,
+            isOffline,
+            isLoadingNewerReportActions: reportMetadata?.isLoadingNewerReportActions,
+            currentCursor: reportMetadata?.newestFetchedReportActionID,
+            prevCursor: prevNewestFetchedIDRef.current,
+        });
+
         if (hasFinishedInitialLoad && hasNewerActions && reportActions.length > 0 && !isOffline && !reportMetadata?.isLoadingNewerReportActions) {
             // Safety guard: if the cursor hasn't advanced since the last call, the server
             // isn't returning new data. Stop to prevent an infinite request loop.
             const currentCursor = reportMetadata?.newestFetchedReportActionID;
             if (prevNewestFetchedIDRef.current !== undefined && prevNewestFetchedIDRef.current === currentCursor) {
+                console.log('[#85647] [MoneyRequestReportActionsList] Auto-pagination - SKIPPED (cursor not advanced):', {
+                    prevCursor: prevNewestFetchedIDRef.current,
+                    currentCursor,
+                });
                 return;
             }
             prevNewestFetchedIDRef.current = currentCursor;
+            console.log('[#85647] [MoneyRequestReportActionsList] Auto-pagination - CALLING loadNewerChats');
             loadNewerChats(false);
         }
     }, [hasFinishedInitialLoad, reportActions.length, hasNewerActions, isOffline, reportMetadata?.isLoadingNewerReportActions, reportMetadata?.newestFetchedReportActionID, loadNewerChats]);
 
     const onStartReached = useCallback(() => {
+        console.log('[#85647] [MoneyRequestReportActionsList] onStartReached called', {
+            reportID,
+            isSearchTopmostFullScreenRoute: isSearchTopmostFullScreenRoute(),
+        });
         if (!isSearchTopmostFullScreenRoute()) {
+            console.log('[#85647] [MoneyRequestReportActionsList] onStartReached - calling loadOlderChats');
             loadOlderChats(false);
             return;
         }
 
+        console.log('[#85647] [MoneyRequestReportActionsList] onStartReached - delayed loadOlderChats (search route)');
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         InteractionManager.runAfterInteractions(() => requestAnimationFrame(() => loadOlderChats(false)));
     }, [loadOlderChats]);
 
     const onEndReached = useCallback(() => {
+        console.log('[#85647] [MoneyRequestReportActionsList] onEndReached called - calling loadNewerChats', {
+            reportID,
+        });
         loadNewerChats(false);
     }, [loadNewerChats]);
 

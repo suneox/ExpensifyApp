@@ -111,6 +111,14 @@ const Pagination: Middleware = (requestResponse, request) => {
         const newPage = sortedPageItems.map((item) => getItemID(item));
 
         const shouldMarkNoNewerActions = response.hasNewerActions === false || response.hasNewerActions === null || (type === 'initial' && !cursorID && response.hasNewerActions !== true);
+        console.log('[#85647] [Pagination] Line 113 - shouldMarkNoNewerActions:', {
+            type,
+            cursorID,
+            hasNewerActions: response.hasNewerActions,
+            shouldMarkNoNewerActions,
+            command: request.command,
+            resourceID,
+        });
         if (shouldMarkNoNewerActions) {
             newPage.unshift(CONST.PAGINATION_START_ID);
         }
@@ -129,9 +137,27 @@ const Pagination: Middleware = (requestResponse, request) => {
         // Only strip PAGINATION_START_ID from cached pages when the server explicitly confirms newer actions exist.
         // Some commands (e.g. GetOlderActions) don't return hasNewerActions at all — in that case, preserve the existing boundary.
         const shouldStripStartMarker = response.hasNewerActions === true;
+        console.log('[#85647] [Pagination] Line 131 - shouldStripStartMarker:', {
+            hasNewerActions: response.hasNewerActions,
+            shouldStripStartMarker,
+            existingPagesCount: existingPages.length,
+            command: request.command,
+            resourceID,
+        });
         const sanitizedExistingPages = shouldStripStartMarker ? existingPages.map((page) => page.filter((id) => id !== CONST.PAGINATION_START_ID)) : existingPages;
 
+        console.log('[#85647] [Pagination] Line 134 - Before mergeAndSortContinuousPages:', {
+            sortedAllItemsCount: sortedAllItems.length,
+            sanitizedExistingPagesCount: sanitizedExistingPages.length,
+            newPageLength: newPage.length,
+            command: request.command,
+        });
         const mergedPages = PaginationUtils.mergeAndSortContinuousPages(sortedAllItems, [...sanitizedExistingPages, newPage], getItemID);
+        console.log('[#85647] [Pagination] Line 134 - After mergeAndSortContinuousPages:', {
+            mergedPagesCount: mergedPages.length,
+            command: request.command,
+            resourceID,
+        });
 
         (response.onyxData as AnyOnyxUpdate[]).push({
             key: pageKey,
@@ -142,6 +168,13 @@ const Pagination: Middleware = (requestResponse, request) => {
         // Store the newest action ID from this pagination response
         if (resourceCollectionKey === ONYXKEYS.COLLECTION.REPORT_ACTIONS) {
             const newestFetchedID = newPage.find((id) => id !== CONST.PAGINATION_START_ID && id !== CONST.PAGINATION_END_ID);
+            console.log('[#85647] [Pagination] Line 143 - newestFetchedID:', {
+                newestFetchedID,
+                newPageFirst3: newPage.slice(0, 3),
+                newPageLast3: newPage.slice(-3),
+                resourceID,
+                command: request.command,
+            });
             if (newestFetchedID) {
                 (response.onyxData as AnyOnyxUpdate[]).push({
                     key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${resourceID}`,

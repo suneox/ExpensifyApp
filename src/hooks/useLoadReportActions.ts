@@ -83,16 +83,34 @@ function useLoadReportActions({
      * displaying.
      */
     const loadOlderChats = (force = false) => {
+        console.log('[#85647] [useLoadReportActions] loadOlderChats called:', {
+            reportID,
+            force,
+            isOffline,
+            oldestReportActionID: oldestReportAction?.reportActionID,
+            hasOlderActions,
+        });
+
         // Only fetch more if we are neither already fetching (so that we don't initiate duplicate requests) nor offline.
         if (!force && isOffline) {
+            console.log('[#85647] [useLoadReportActions] loadOlderChats - early return (offline)');
             return;
         }
 
         // Don't load more reportActions if we're already at the beginning of the chat history
         if (!oldestReportAction || !hasOlderActions) {
+            console.log('[#85647] [useLoadReportActions] loadOlderChats - early return (no older actions)', {
+                hasOldestAction: !!oldestReportAction,
+                hasOlderActions,
+            });
             return;
         }
 
+        console.log('[#85647] [useLoadReportActions] loadOlderChats - calling getOlderActions:', {
+            reportID,
+            cursorID: currentReportOldestAction?.reportActionID,
+            isTransactionThreadReport,
+        });
         if (isTransactionThreadReport) {
             getOlderActions(reportID, currentReportOldestAction?.reportActionID);
             getOlderActions(transactionThreadReport?.reportID, transactionThreadOldestAction?.reportActionID);
@@ -102,6 +120,17 @@ function useLoadReportActions({
     };
 
     const loadNewerChats = (force = false) => {
+        console.log('[#85647] [useLoadReportActions] loadNewerChats called:', {
+            reportID,
+            force,
+            isFocused,
+            hasNewerActions,
+            isOffline,
+            newestReportActionID: newestReportAction?.reportActionID,
+            newestFetchedReportActionID,
+            pendingAction: newestReportAction?.pendingAction,
+        });
+
         if (
             !force &&
             (!isFocused ||
@@ -112,16 +141,27 @@ function useLoadReportActions({
                 // more in case we have cached messages.
                 newestReportAction.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE)
         ) {
+            console.log('[#85647] [useLoadReportActions] loadNewerChats - early return (guards not met)');
             return;
         }
 
         // Use the Pusher-safe cursor when available instead of newestReportAction
         // (which may include Pusher-delivered actions like Concierge replies that skip gaps)
         if (newestFetchedReportActionID) {
+            console.log('[#85647] [useLoadReportActions] loadNewerChats - calling getNewerActions with newestFetchedReportActionID:', {
+                reportID,
+                cursorID: newestFetchedReportActionID,
+                newestReportActionID: newestReportAction?.reportActionID,
+            });
             getNewerActions(reportID, newestFetchedReportActionID);
             return;
         }
 
+        console.log('[#85647] [useLoadReportActions] loadNewerChats - calling getNewerActions with newestReportAction:', {
+            reportID,
+            cursorID: newestReportAction?.reportActionID,
+            isTransactionThreadReport,
+        });
         if (isTransactionThreadReport) {
             getNewerActions(reportID, currentReportNewestAction?.reportActionID);
             getNewerActions(transactionThreadReport.reportID, transactionThreadNewestAction?.reportActionID);
