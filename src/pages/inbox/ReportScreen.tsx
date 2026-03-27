@@ -295,6 +295,44 @@ function ReportScreen({route, navigation}: ReportScreenProps) {
     const lastReportIDFromRoute = usePrevious(reportIDFromRoute);
     const [isLinkingToMessage, setIsLinkingToMessage] = useState(!!reportActionIDFromRoute);
 
+    // 🐛 ISSUE #84248: Track if current route is own workspace chat using ref.
+    // This persists through the server SET wipe (when report becomes undefined),
+    // unlike prevReport which becomes undefined by the time reportWasDeleted=true fires.
+    const isCurrentRouteOwnWorkspaceChatRef = useRef(!!report?.isOwnPolicyExpenseChat && report?.reportID === reportIDFromRoute);
+
+    // Update ref synchronously during render - persists through Onyx SET wipe
+    // 🐛 DEBUG ISSUE #84248: Track ref updates
+    // eslint-disable-next-line no-console
+    console.log('[#84248] useRef update check', {
+        reportIDFromRoute,
+        reportID: report?.reportID,
+        isOwnPolicyExpenseChat: report?.isOwnPolicyExpenseChat,
+        refValueBefore: isCurrentRouteOwnWorkspaceChatRef.current,
+    });
+
+    if (report?.isOwnPolicyExpenseChat && report?.reportID === reportIDFromRoute) {
+        // eslint-disable-next-line no-console
+        console.log('[#84248] useRef: SETTING to TRUE (own workspace chat loaded)');
+        isCurrentRouteOwnWorkspaceChatRef.current = true;
+    } else if (!report?.isOwnPolicyExpenseChat && reportIDFromRoute && !report?.reportID) {
+        // Report was just wiped by server SET - keep ref true
+        // eslint-disable-next-line no-console
+        console.log('[#84248] useRef: PRESERVING current value (server SET wipe detected)', {
+            refValuePreserved: isCurrentRouteOwnWorkspaceChatRef.current,
+        });
+        // Do nothing, preserve the ref value
+    } else if (report?.reportID === reportIDFromRoute && !report?.isOwnPolicyExpenseChat) {
+        // Different report on same route - reset ref
+        // eslint-disable-next-line no-console
+        console.log('[#84248] useRef: RESETTING to FALSE (different report on same route)');
+        isCurrentRouteOwnWorkspaceChatRef.current = false;
+    } else {
+        // eslint-disable-next-line no-console
+        console.log('[#84248] useRef: No change (condition not met)', {
+            reason: 'Report not loaded or different route',
+        });
+    }
+
     const {accountID: currentUserAccountID, email: currentUserEmail} = useCurrentUserPersonalDetails();
 
     const [isLoadingApp] = useOnyx(ONYXKEYS.IS_LOADING_APP);
@@ -763,10 +801,25 @@ function ReportScreen({route, navigation}: ReportScreenProps) {
             isEmpty(report) &&
             (isMoneyRequest(prevReport) ||
                 isMoneyRequestReport(prevReport) ||
-                isPolicyExpenseChat(prevReport) ||
+                (isPolicyExpenseChat(prevReport) && !prevReport?.isOwnPolicyExpenseChat) ||
                 isGroupChat(prevReport) ||
                 isAdminRoom(prevReport) ||
                 isAnnounceRoom(prevReport));
+
+        // 🐛 DEBUG ISSUE #84248: Track main navigation effect
+        // eslint-disable-next-line no-console
+        console.log('[#84248] ReportScreen main effect FIRED', {
+            reportIDFromRoute,
+            onyxReportID: report?.reportID,
+            prevOnyxReportID: prevReport?.reportID,
+            wasReportRemoved: !!prevReport?.reportID && prevReport?.reportID === reportIDFromRoute && !report?.reportID,
+            reportIsOwnPolicyExpenseChat: report?.isOwnPolicyExpenseChat,
+            prevReportIsOwnPolicyExpenseChat: prevReport?.isOwnPolicyExpenseChat,
+            isRemovalExpectedForReportType,
+            isCurrentRouteOwnWorkspaceChatRef: isCurrentRouteOwnWorkspaceChatRef.current,
+            isPolicyExpenseChatPrev: isPolicyExpenseChat(prevReport),
+            isPolicyExpenseChatCurrent: isPolicyExpenseChat(report),
+        });
         const didReportClose = wasReportRemoved && prevReport.statusNum === CONST.REPORT.STATUS_NUM.OPEN && report?.statusNum === CONST.REPORT.STATUS_NUM.CLOSED;
         const isTopLevelPolicyRoomWithNoStatus = !report?.statusNum && !prevReport?.parentReportID && prevReport?.chatType === CONST.REPORT.CHAT_TYPE.POLICY_ROOM;
         const isClosedTopLevelPolicyRoom = wasReportRemoved && prevReport.statusNum === CONST.REPORT.STATUS_NUM.OPEN && isTopLevelPolicyRoomWithNoStatus;
@@ -779,6 +832,23 @@ function ReportScreen({route, navigation}: ReportScreenProps) {
             isClosedTopLevelPolicyRoom ||
             (prevDeletedParentAction && !deletedParentAction)
         ) {
+            // 🐛 DEBUG ISSUE #84248: Navigation triggered in main effect
+            // eslint-disable-next-line no-console
+            console.log('[#84248] Main effect NAVIGATION condition MET', {
+                reportIDFromRoute,
+                trigger: {
+                    userLeavingStatus: !prevUserLeavingStatus && !!userLeavingStatus,
+                    didReportClose,
+                    isRemovalExpectedForReportType,
+                    isClosedTopLevelPolicyRoom,
+                    prevDeletedParentAction: prevDeletedParentAction && !deletedParentAction,
+                },
+                prevReportIsOwnPolicyExpenseChat: prevReport?.isOwnPolicyExpenseChat,
+                reportIsOwnPolicyExpenseChat: report?.isOwnPolicyExpenseChat,
+                isCurrentRouteOwnWorkspaceChatRef: isCurrentRouteOwnWorkspaceChatRef.current,
+                isFocused,
+                isTopMostReportId,
+            });
             const currentRoute = navigationRef.getCurrentRoute();
             const topmostReportIDInSearchRHP = Navigation.getTopmostSearchReportID();
             const isTopmostSearchReportID = reportIDFromRoute === topmostReportIDInSearchRHP;
@@ -851,13 +921,46 @@ function ReportScreen({route, navigation}: ReportScreenProps) {
             return;
         }
 
+        // 🐛 DEBUG ISSUE #84248: reportWasDeleted effect triggered
+        // eslint-disable-next-line no-console
+        console.log('[#84248] reportWasDeleted effect FIRED', {
+            reportIDFromRoute,
+            reportWasDeleted,
+            isFocused,
+            deletedReportParentID,
+            reportIsOwnPolicyExpenseChat: report?.isOwnPolicyExpenseChat,
+            prevReportIsOwnPolicyExpenseChat: prevReport?.isOwnPolicyExpenseChat,
+            isCurrentRouteOwnWorkspaceChatRef: isCurrentRouteOwnWorkspaceChatRef.current,
+            conciergeReportID,
+        });
+
         // Only redirect if focused
         if (!isFocused) {
+            // eslint-disable-next-line no-console
+            console.log('[#84248] reportWasDeleted effect: NOT focused, skipping navigation');
             return;
+        }
+
+        // 🐛 ISSUE #84248 FIX 2/3: useRef guard - skip navigation for own workspace chats
+        // Uses useRef because prevReport is undefined by the time this effect fires after server SET wipe
+        if (isCurrentRouteOwnWorkspaceChatRef.current) {
+            // eslint-disable-next-line no-console
+            console.log('[#84248] reportWasDeleted effect: GUARDED - Skip navigation for own workspace chat (isCurrentRouteOwnWorkspaceChatRef=true)');
+            return;
+        }
+
+        // 🐛 ISSUE #84248 FIX 3/3: Clean stack before navigating to prevent infinite loop
+        Navigation.dismissModal();
+        if (Navigation.getTopmostReportId() === reportIDFromRoute) {
+            Navigation.isNavigationReady().then(() => {
+                Navigation.popToSidebar();
+            });
         }
 
         // Try to navigate to parent report if available
         if (deletedReportParentID && !isMoneyRequestReportPendingDeletion(deletedReportParentID)) {
+            // eslint-disable-next-line no-console
+            console.log('[#84248] reportWasDeleted effect: Navigating to parent report', {deletedReportParentID});
             Navigation.isNavigationReady().then(() => {
                 Navigation.navigate(ROUTES.REPORT_WITH_ID.getRoute(deletedReportParentID));
             });
@@ -865,10 +968,48 @@ function ReportScreen({route, navigation}: ReportScreenProps) {
         }
 
         // Fallback to Concierge
+        // eslint-disable-next-line no-console
+        console.log('[#84248] reportWasDeleted effect: Navigating to Concierge (fallback)');
         Navigation.isNavigationReady().then(() => {
             navigateToConciergeChat(conciergeReportID, introSelected, currentUserAccountID, isSelfTourViewed, betas);
         });
-    }, [reportWasDeleted, isFocused, deletedReportParentID, conciergeReportID, introSelected, currentUserAccountID, isSelfTourViewed, betas]);
+    }, [
+        reportWasDeleted,
+        isFocused,
+        deletedReportParentID,
+        conciergeReportID,
+        introSelected,
+        currentUserAccountID,
+        isSelfTourViewed,
+        betas,
+        reportIDFromRoute,
+        report?.isOwnPolicyExpenseChat,
+        prevReport?.isOwnPolicyExpenseChat,
+    ]);
+
+    // 🐛 ISSUE #84248 FIX 2.5: Re-fetch after wipe to prevent blank loading skeleton
+    useEffect(() => {
+        const prevReportID = prevReport?.reportID;
+        const wasJustWiped = !!prevReportID && prevReportID === reportIDFromRoute && !report?.reportID;
+
+        if (!wasJustWiped) {
+            return;
+        }
+
+        if (!isCurrentRouteOwnWorkspaceChatRef.current) {
+            return;
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('[#84248] Re-fetching report after server SET wipe', {
+            reportIDFromRoute,
+            prevReportID,
+            isCurrentRouteOwnWorkspaceChatRef: isCurrentRouteOwnWorkspaceChatRef.current,
+        });
+
+        openReport({reportID: reportIDFromRoute, introSelected, betas});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [report?.reportID, prevReport?.reportID, reportIDFromRoute, report?.isOwnPolicyExpenseChat, prevReport?.isOwnPolicyExpenseChat]);
 
     useEffect(() => {
         if (!isValidReportIDFromPath(reportIDFromRoute)) {

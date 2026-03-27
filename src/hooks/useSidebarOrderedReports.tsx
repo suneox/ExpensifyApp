@@ -277,6 +277,13 @@ function SidebarOrderedReportsContextProvider({
         setClearCacheDummyCounter((current) => current + 1);
     }, []);
 
+    // 🐛 ISSUE #84248: Check if current report is own workspace chat (for LHN force-inclusion on mobile)
+    // We check cached reports first because live chatReports may be undefined due to server SET wipe
+    const isCurrentReportOwnWorkspaceChat =
+        derivedCurrentReportID &&
+        derivedCurrentReportID !== '-1' &&
+        (chatReports?.[`${ONYXKEYS.COLLECTION.REPORT}${derivedCurrentReportID}`]?.isOwnPolicyExpenseChat ?? currentReportsToDisplay[derivedCurrentReportID]?.isOwnPolicyExpenseChat);
+
     const stateValue: SidebarOrderedReportsStateContextValue = useMemo(() => {
         // We need to make sure the current report is in the list of reports, but we do not want
         // to have to re-generate the list every time the currentReportID changes. To do that
@@ -289,11 +296,20 @@ function SidebarOrderedReportsContextProvider({
         // any expense, a new LHN item is added in the list and is visible on web. But on mobile, we
         // just navigate to the screen with expense details, so there seems no point to execute this logic on mobile.
         if (
-            (!shouldUseNarrowLayout || orderedReportIDs.length === 0) &&
+            (!shouldUseNarrowLayout || orderedReportIDs.length === 0 || isCurrentReportOwnWorkspaceChat) &&
             derivedCurrentReportID &&
             derivedCurrentReportID !== '-1' &&
             orderedReportIDs.indexOf(derivedCurrentReportID) === -1
         ) {
+            // 🐛 DEBUG ISSUE #84248: Log LHN force-inclusion for own workspace chat
+            // eslint-disable-next-line no-console
+            console.log('[#84248] LHN force-including own workspace chat', {
+                derivedCurrentReportID,
+                isCurrentReportOwnWorkspaceChat,
+                shouldUseNarrowLayout,
+                orderedReportIDsLength: orderedReportIDs.length,
+            });
+
             const updatedReportIDs = getOrderedReportIDs();
             const updatedReports = getOrderedReports(updatedReportIDs);
             return {
@@ -308,7 +324,8 @@ function SidebarOrderedReportsContextProvider({
             orderedReportIDs,
             currentReportID: derivedCurrentReportID,
         };
-    }, [getOrderedReportIDs, orderedReportIDs, derivedCurrentReportID, shouldUseNarrowLayout, getOrderedReports, orderedReports]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getOrderedReportIDs, orderedReportIDs, derivedCurrentReportID, shouldUseNarrowLayout, getOrderedReports, orderedReports, isCurrentReportOwnWorkspaceChat]);
 
     const actionsValue: SidebarOrderedReportsActionsContextValue = useMemo(() => ({clearLHNCache}), [clearLHNCache]);
 
