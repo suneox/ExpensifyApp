@@ -143,6 +143,12 @@ const KEYS_TO_PRESERVE: OnyxKey[] = [
     // Preserve IS_USING_IMPORTED_STATE so that when the app restarts (especially in HybridApp mode),
     // we know if we're in imported state mode and should skip API calls that would cause infinite loading
     ONYXKEYS.IS_USING_IMPORTED_STATE,
+
+    // #84186 Fix 2: Preserve stashed session/credentials so that delegate session recovery works after Clear Cache.
+    // Without these, a delegate who clears cache and then has their access revoked (408) cannot
+    // restore their original session, causing permanent logout.
+    ONYXKEYS.STASHED_SESSION,
+    ONYXKEYS.STASHED_CREDENTIALS,
 ];
 
 /*
@@ -825,6 +831,10 @@ function setPreservedAccount(account: OnyxTypes.Account) {
 }
 
 function clearOnyxAndResetApp(shouldNavigateToHomepage?: boolean) {
+    // #84186 Fix 2: Trace Clear Cache calls
+    console.log('[#84186-Fix2] clearOnyxAndResetApp called - Clear Cache initiated');
+    console.log('[#84186-Fix2] KEYS_TO_PRESERVE includes STASHED_SESSION:', KEYS_TO_PRESERVE.includes(ONYXKEYS.STASHED_SESSION));
+    console.log('[#84186-Fix2] KEYS_TO_PRESERVE includes STASHED_CREDENTIALS:', KEYS_TO_PRESERVE.includes(ONYXKEYS.STASHED_CREDENTIALS));
     // The value of isUsingImportedState will be lost once Onyx is cleared, so we need to store it
     const isStateImported = isUsingImportedState;
     const sequentialQueue = getAll();

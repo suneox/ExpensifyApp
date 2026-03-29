@@ -12,6 +12,9 @@ const handleDeletedAccount: Middleware = (requestResponse) =>
         if (response?.jsonCode !== 408 || !response?.message?.includes('The account you are trying to use is deleted.')) {
             return response;
         }
+        // #84186-001: Entry point for bug flow
+        console.log('[#84186-001] HandleDeletedAccount: 408 "account deleted" detected');
+        console.log('[#84186-001] Triggering signOutAndRedirectToSignIn(true, false, true, true)');
         signOutAndRedirectToSignIn(true, false, true, true);
     });
 

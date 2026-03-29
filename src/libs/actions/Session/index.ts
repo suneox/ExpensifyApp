@@ -443,7 +443,41 @@ function signOutAndRedirectToSignIn(shouldResetToHome?: boolean, shouldStashSess
                         });
                     });
                 });
+            } else if (shouldRestoreStashedSession && hasStashedSession()) {
+                // #84186 Fix 1: Atomic session swap for delegate 408 flow
+                // When restoring a stashed session (e.g., delegate removed via 408), use atomic clear→restore
+                // to avoid the login page flash. This preserves SESSION during Onyx.clear so it's never undefined,
+                // then overwrites it with the stashed session via multiSet. Same pattern as the supportal flow above.
+                console.log('[#84186-Fix1] Delegate 408 detected - using atomic session swap to prevent login flash');
+                console.log('[#84186-Fix1] KEYS_TO_PRESERVE_SUPPORTAL includes SESSION:', KEYS_TO_PRESERVE_SUPPORTAL.includes(ONYXKEYS.SESSION));
+                console.log('[#84186-Fix1] Stashed session email:', stashedSession.email);
+                Onyx.clear(KEYS_TO_PRESERVE_SUPPORTAL).then(() => {
+                    console.log('[#84186-Fix1] Onyx.clear completed - SESSION was preserved');
+                    Onyx.multiSet(onyxSetParams).then(() => {
+                        console.log('[#84186-Fix1] Onyx.multiSet completed - stashed session restored');
+                        // Clear stashed data after restoring to prevent re-use
+                        Onyx.set(ONYXKEYS.STASHED_CREDENTIALS, {});
+                        Onyx.set(ONYXKEYS.STASHED_SESSION, {});
+
+                        // Reload app data for the restored user (Onyx.clear removed all reports, policies, etc.)
+                        console.log('[#84186-Fix1] Reloading app data for restored user');
+                        confirmReadyToOpenApp();
+                        openApp();
+
+                        if (CONFIG.IS_HYBRID_APP && hasSwitchedAccountInHybridMode) {
+                            console.log('[#84186-Fix1] HybridApp: switching account to', stashedSession.email);
+                            HybridAppModule.switchAccount({
+                                newDotCurrentAccountEmail: stashedSession.email ?? '',
+                                authToken: stashedSession.authToken ?? '',
+                                policyID: '',
+                                accountID: '',
+                            });
+                        }
+                        console.log('[#84186-Fix1] ✅ Atomic session swap completed - no login flash!');
+                    });
+                });
             } else {
+                console.log('[#84186] Fallback: using standard redirectToSignIn flow');
                 redirectToSignIn().then(() => {
                     Onyx.multiSet(onyxSetParams);
 
