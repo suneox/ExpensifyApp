@@ -414,14 +414,58 @@ function MoneyRequestReportActionsList({
     const hasFinishedInitialLoad = reportMetadata?.isLoadingInitialReportActions === false;
     const prevNewestFetchedIDRef = useRef<string | undefined>(undefined);
     useEffect(() => {
+        // eslint-disable-next-line no-console -- Debug logging for issue #86735
+        console.log(
+            '[#86735] 📜 [AutoPagination] Effect triggered:',
+            JSON.stringify(
+                {
+                    reportID,
+                    hasFinishedInitialLoad,
+                    hasNewerActions,
+                    reportActionsLength: reportActions.length,
+                    isOffline,
+                    isLoadingNewer: reportMetadata?.isLoadingNewerReportActions,
+                    currentCursor: reportMetadata?.newestFetchedReportActionID,
+                    prevCursor: prevNewestFetchedIDRef.current,
+                },
+                null,
+                2,
+            ),
+        );
+
         if (hasFinishedInitialLoad && hasNewerActions && reportActions.length > 0 && !isOffline && !reportMetadata?.isLoadingNewerReportActions) {
             // Safety guard: if the cursor hasn't advanced since the last call, the server
             // isn't returning new data. Stop to prevent an infinite request loop.
             const currentCursor = reportMetadata?.newestFetchedReportActionID;
             if (prevNewestFetchedIDRef.current !== undefined && prevNewestFetchedIDRef.current === currentCursor) {
+                // eslint-disable-next-line no-console -- Debug logging for issue #86735
+                console.log(
+                    '[#86735] 📜 [AutoPagination] Cursor has not advanced, stopping:',
+                    JSON.stringify(
+                        {
+                            cursor: currentCursor,
+                            reason: 'Server not returning new data',
+                        },
+                        null,
+                        2,
+                    ),
+                );
                 return;
             }
             prevNewestFetchedIDRef.current = currentCursor;
+
+            // eslint-disable-next-line no-console -- Debug logging for issue #86735
+            console.log(
+                '[#86735] 📜 [AutoPagination] Calling loadNewerChats:',
+                JSON.stringify(
+                    {
+                        cursor: currentCursor,
+                        prevCursor: prevNewestFetchedIDRef.current,
+                    },
+                    null,
+                    2,
+                ),
+            );
             loadNewerChats(false);
         }
     }, [hasFinishedInitialLoad, reportActions.length, hasNewerActions, isOffline, reportMetadata?.isLoadingNewerReportActions, reportMetadata?.newestFetchedReportActionID, loadNewerChats]);
@@ -434,34 +478,133 @@ function MoneyRequestReportActionsList({
     const prevBackfillCursorRef = useRef<string | undefined>(undefined);
     const isBackfillingRef = useRef(false);
     const prevBackfillReportIDRef = useRef(reportID);
+
+    // [#86735] Debug: Log report change
     if (prevBackfillReportIDRef.current !== reportID) {
+        // eslint-disable-next-line no-console -- Debug logging for issue #86735
+        console.log(
+            '[#86735] ⏪ [Backfill] Report changed, resetting refs:',
+            JSON.stringify(
+                {
+                    oldReportID: prevBackfillReportIDRef.current,
+                    newReportID: reportID,
+                },
+                null,
+                2,
+            ),
+        );
         prevBackfillReportIDRef.current = reportID;
         prevBackfillCursorRef.current = undefined;
         isBackfillingRef.current = false;
     }
+
     useEffect(() => {
+        // eslint-disable-next-line no-console -- Debug logging for issue #86735
+        console.log(
+            '[#86735] ⏪ [Backfill] Effect triggered:',
+            JSON.stringify(
+                {
+                    reportID,
+                    hasFinishedInitialLoad,
+                    isOffline,
+                    hasNewerActions,
+                    isLoadingNewer: reportMetadata?.isLoadingNewerReportActions,
+                    isLoadingOlder: reportMetadata?.isLoadingOlderReportActions,
+                    reportActionsLength: reportActions.length,
+                    newestCursor: reportMetadata?.newestFetchedReportActionID,
+                    oldestCursor: reportMetadata?.oldestFetchedReportActionID,
+                    isBackfilling: isBackfillingRef.current,
+                },
+                null,
+                2,
+            ),
+        );
+
         if (!hasFinishedInitialLoad || isOffline || hasNewerActions || reportMetadata?.isLoadingNewerReportActions || reportMetadata?.isLoadingOlderReportActions) {
             return;
         }
 
         if (!isBackfillingRef.current) {
             const hasIOUActions = reportActions.some((action) => isMoneyRequestAction(action));
+            const iouActionCount = reportActions.filter((action) => isMoneyRequestAction(action)).length;
+            // eslint-disable-next-line no-console -- Debug logging for issue #86735
+            console.log(
+                '[#86735] ⏪ [Backfill] Initial check:',
+                JSON.stringify(
+                    {
+                        hasIOUActions,
+                        iouActionCount,
+                        totalActions: reportActions.length,
+                        threshold: BACKFILL_MIN_ACTIONS_THRESHOLD,
+                        hasNewestCursor: !!reportMetadata?.newestFetchedReportActionID,
+                        newestCursor: reportMetadata?.newestFetchedReportActionID,
+                        shouldProceed: hasIOUActions && reportActions.length >= BACKFILL_MIN_ACTIONS_THRESHOLD && !!reportMetadata?.newestFetchedReportActionID,
+                    },
+                    null,
+                    2,
+                ),
+            );
             if (!hasIOUActions || reportActions.length < BACKFILL_MIN_ACTIONS_THRESHOLD || !reportMetadata?.newestFetchedReportActionID) {
                 return;
             }
         }
 
         const cursor = isBackfillingRef.current ? reportMetadata?.oldestFetchedReportActionID : reportMetadata?.newestFetchedReportActionID;
+        // eslint-disable-next-line no-console -- Debug logging for issue #86735
+        console.log(
+            '[#86735] ⏪ [Backfill] Cursor determined:',
+            JSON.stringify(
+                {
+                    isBackfilling: isBackfillingRef.current,
+                    usingOldestCursor: isBackfillingRef.current,
+                    cursor,
+                    prevCursor: prevBackfillCursorRef.current,
+                    cursorAdvanced: prevBackfillCursorRef.current !== cursor,
+                },
+                null,
+                2,
+            ),
+        );
+
         if (!cursor) {
+            // eslint-disable-next-line no-console -- Debug logging for issue #86735
+            console.log('[#86735] ⏪ [Backfill] No cursor available, aborting');
             return;
         }
 
         if (prevBackfillCursorRef.current === cursor) {
+            // eslint-disable-next-line no-console -- Debug logging for issue #86735
+            console.log(
+                '[#86735] ⏪ [Backfill] Cursor has not advanced, stopping backfill:',
+                JSON.stringify(
+                    {
+                        cursor,
+                        reason: 'Gap filled or server not returning new data',
+                    },
+                    null,
+                    2,
+                ),
+            );
             return;
         }
 
         isBackfillingRef.current = true;
         prevBackfillCursorRef.current = cursor;
+
+        // eslint-disable-next-line no-console -- Debug logging for issue #86735
+        console.log(
+            '[#86735] ⏪ [Backfill] Calling getOlderActions:',
+            JSON.stringify(
+                {
+                    reportID,
+                    cursor,
+                    isBackfilling: isBackfillingRef.current,
+                },
+                null,
+                2,
+            ),
+        );
+
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         const handle = InteractionManager.runAfterInteractions(() => getOlderActions(reportID, cursor));
 

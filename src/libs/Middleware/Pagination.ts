@@ -152,6 +152,27 @@ const Pagination: Middleware = (requestResponse, request) => {
             if (oldestFetchedID && isOlderDirection) {
                 value.oldestFetchedReportActionID = oldestFetchedID;
             }
+
+            // eslint-disable-next-line no-console -- Debug logging for issue #86735
+            console.log(
+                '[#86735] 📄 [Pagination] Storing cursor IDs:',
+                JSON.stringify(
+                    {
+                        resourceID,
+                        type,
+                        isOlderDirection,
+                        newestFetchedID,
+                        oldestFetchedID,
+                        value,
+                        newPageFirst3: newPage.slice(0, 3),
+                        newPageLast3: newPage.slice(-3),
+                        newPageLength: newPage.length,
+                    },
+                    null,
+                    2,
+                ),
+            );
+
             if (Object.keys(value).length > 0) {
                 (response.onyxData as AnyOnyxUpdate[]).push({
                     key: `${ONYXKEYS.COLLECTION.REPORT_METADATA}${resourceID}`,
