@@ -1394,6 +1394,8 @@ const CONST = {
                 CARD_REPLACED_VIRTUAL: 'CARDREPLACEDVIRTUAL',
                 CARD_REPLACED: 'CARDREPLACED',
                 CARD_ASSIGNED: 'CARDASSIGNED',
+                CARD_FROZEN: 'CARDFROZEN',
+                CARD_UNFROZEN: 'CARDUNFROZEN',
                 PERSONAL_CARD_CONNECTION_BROKEN: 'PERSONALCARDCONNECTIONBROKEN',
                 CHANGE_FIELD: 'CHANGEFIELD', // OldDot Action
                 CHANGE_POLICY: 'CHANGEPOLICY',
@@ -6533,6 +6535,7 @@ const CONST = {
     ONBOARDING_RHP_VARIANT: {
         RHP_CONCIERGE_DM: 'rhpConciergeDm',
         RHP_ADMINS_ROOM: 'rhpAdminsRoom',
+        RHP_HOME_PAGE: 'rhpHomePage',
         CONTROL: 'control',
     },
     ACTIONABLE_TRACK_EXPENSE_WHISPER_MESSAGE: 'What would you like to do with this expense?',
