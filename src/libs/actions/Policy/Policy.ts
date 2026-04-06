@@ -5420,6 +5420,12 @@ function upgradeToCorporate(policy: OnyxEntry<Policy>, featureName?: string) {
 }
 
 function downgradeToTeam(policyID: string, currentType: Policy['type'], currentIsAttendeeTrackingEnabled: Policy['isAttendeeTrackingEnabled']) {
+    // 🐛 DEBUG: TC-007 - Downgrade
+    console.log('[TC-007] downgradeToTeam - Policy ID:', policyID);
+    console.log('[TC-007] downgradeToTeam - Current type:', currentType);
+    console.log('[TC-007] downgradeToTeam - Current isAttendeeTrackingEnabled:', currentIsAttendeeTrackingEnabled);
+    console.log('[TC-007] downgradeToTeam - Setting isAttendeeTrackingEnabled to null (Team policies)');
+
     const optimisticData: Array<OnyxUpdate<typeof ONYXKEYS.COLLECTION.POLICY>> = [
         {
             onyxMethod: Onyx.METHOD.MERGE,

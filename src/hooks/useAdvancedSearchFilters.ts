@@ -229,7 +229,13 @@ const policyDerivedSelector = (policies: OnyxCollection<Policy>) => {
             areTaxEnabled = isPolicyFeatureEnabled(policy, CONST.POLICY.MORE_FEATURES.ARE_TAXES_ENABLED);
         }
         if (!isAttendeeTrackingEnabled) {
+            // 🐛 DEBUG: TC-005 - Search Filter
+            console.log('[TC-005] useAdvancedSearchFilters - Policy ID:', policy?.id);
+            console.log('[TC-005] useAdvancedSearchFilters - Raw policy.isAttendeeTrackingEnabled:', policy?.isAttendeeTrackingEnabled);
+            const before = isAttendeeTrackingEnabled;
             isAttendeeTrackingEnabled = isPolicyFeatureEnabled(policy, CONST.POLICY.MORE_FEATURES.IS_ATTENDEE_TRACKING_ENABLED);
+            console.log('[TC-005] useAdvancedSearchFilters - isPolicyFeatureEnabled result:', isAttendeeTrackingEnabled);
+            console.log('[TC-005] useAdvancedSearchFilters - Filter will show:', isAttendeeTrackingEnabled);
         }
         if (!hasReportFields) {
             hasReportFields = Object.values(policy.fieldList ?? {}).some((val) => val.type !== CONST.POLICY.DEFAULT_FIELD_LIST_TYPE);

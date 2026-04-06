@@ -506,6 +506,14 @@ const ViolationsUtils = {
         const rawAttendees = updatedTransaction.modifiedAttendees ?? updatedTransaction.comment?.attendees;
         const attendees = Array.isArray(rawAttendees) ? rawAttendees : [];
         const isAttendeeTrackingEnabled = isAttendeeTrackingEnabledForPolicy(policy);
+        // 🐛 DEBUG: TC-003 - Violation Fires
+        console.log('[TC-003] ViolationsUtils - Policy ID:', policy?.id);
+        console.log('[TC-003] ViolationsUtils - Raw policy.isAttendeeTrackingEnabled:', policy?.isAttendeeTrackingEnabled);
+        console.log('[TC-003] ViolationsUtils - isAttendeeTrackingEnabled:', isAttendeeTrackingEnabled);
+        console.log('[TC-003] ViolationsUtils - Category:', categoryName);
+        console.log('[TC-003] ViolationsUtils - areAttendeesRequired:', !!policyCategories?.[categoryName ?? '']?.areAttendeesRequired);
+        console.log('[TC-003] ViolationsUtils - isControlPolicy:', isControlPolicy);
+        console.log('[TC-003] ViolationsUtils - Attendees count:', attendees.length);
         // Filter out the owner/creator when checking attendance count - expense is valid if at least one non-owner attendee is present
         const ownerAccountID = iouReport?.ownerAccountID;
         // Calculate attendees minus owner. When ownerAccountID is known, filter by accountID.
@@ -537,6 +545,10 @@ const ViolationsUtils = {
             !!policyCategories?.[categoryName ?? '']?.areAttendeesRequired &&
             isControlPolicy &&
             (attendees.length === 0 || attendeesMinusOwnerCount === 0);
+        // 🐛 DEBUG: TC-003 - Violation Result
+        console.log('[TC-003] ViolationsUtils - shouldShowMissingAttendees:', shouldShowMissingAttendees);
+        console.log('[TC-003] ViolationsUtils - attendeesMinusOwnerCount:', attendeesMinusOwnerCount);
+        console.log('[TC-003] ViolationsUtils - !isInvoiceTransaction:', !isInvoiceTransaction);
 
         const hasFutureDateViolation = transactionViolations.some((violation) => violation.name === 'futureDate');
         // Add 'futureDate' violation if transaction date is in the future and policy type is corporate

@@ -97,7 +97,16 @@ function ExpenseReportListItem<TItem extends ListItem>({
     // Sync missingAttendees violation at render time for each transaction in the report
     // This ensures violations show immediately when category settings change, without needing to click the row
     const hasSyncedMissingAttendeesViolation = useMemo(() => {
+        // 🐛 DEBUG: TC-004 - Badge Sync
+        const policyValue = policyForViolations?.isAttendeeTrackingEnabled;
+        const isEnabled = isAttendeeTrackingEnabled(policyForViolations);
+        console.log('[TC-004] ExpenseReportListItem - Report ID:', reportItem?.reportID);
+        console.log('[TC-004] ExpenseReportListItem - Raw policy.isAttendeeTrackingEnabled:', policyValue);
+        console.log('[TC-004] ExpenseReportListItem - isAttendeeTrackingEnabled():', isEnabled);
+        console.log('[TC-004] ExpenseReportListItem - Policy ID:', policyForViolations?.id);
+
         if (!isAttendeeTrackingEnabled(policyForViolations)) {
+            console.log('[TC-004] ExpenseReportListItem - Early return: Badge NOT synced');
             return false;
         }
 
@@ -121,6 +130,8 @@ function ExpenseReportListItem<TItem extends ListItem>({
             );
             return violations.some((violation) => violation.name === CONST.VIOLATIONS.MISSING_ATTENDEES);
         });
+        console.log('[TC-004] ExpenseReportListItem - hasSyncedMissingAttendeesViolation:', hasSyncedMissingAttendeesViolation);
+        return hasSyncedMissingAttendeesViolation;
     }, [reportItem, policyCategories, policyForViolations, reportForViolations, currentUserDetails]);
 
     const {isDelegateAccessRestricted} = useDelegateNoAccessState();

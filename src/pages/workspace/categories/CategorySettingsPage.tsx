@@ -159,12 +159,25 @@ function CategorySettingsPage({
     }, [policyCategory, translate, policy]);
 
     const requireFieldsPendingAction = useMemo(() => {
+        // 🐛 DEBUG: TC-006 - Pending Action
+        const policyValue = policy?.isAttendeeTrackingEnabled;
+        const isEnabled = isAttendeeTrackingEnabled(policy);
+        console.log('[TC-006] CategorySettingsPage - Policy ID:', policy?.id);
+        console.log('[TC-006] CategorySettingsPage - Raw policy.isAttendeeTrackingEnabled:', policyValue);
+        console.log('[TC-006] CategorySettingsPage - isAttendeeTrackingEnabled():', isEnabled);
+        console.log('[TC-006] CategorySettingsPage - areAttendeesRequired pending:', policyCategory?.pendingFields?.areAttendeesRequired);
+        console.log('[TC-006] CategorySettingsPage - areCommentsRequired pending:', policyCategory?.pendingFields?.areCommentsRequired);
+
         if (isAttendeeTrackingEnabled(policy)) {
             // Pending fields are objects so we can't use nullish coalescing
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            return policyCategory?.pendingFields?.areAttendeesRequired || policyCategory?.pendingFields?.areCommentsRequired;
+            const result = policyCategory?.pendingFields?.areAttendeesRequired || policyCategory?.pendingFields?.areCommentsRequired;
+            console.log('[TC-006] CategorySettingsPage - Showing attendees pending action:', result);
+            return result;
         }
-        return policyCategory?.pendingFields?.areCommentsRequired;
+        const result = policyCategory?.pendingFields?.areCommentsRequired;
+        console.log('[TC-006] CategorySettingsPage - Showing comments pending action:', result);
+        return result;
     }, [policyCategory?.pendingFields, policy]);
 
     // eslint-disable-next-line rulesdir/no-negated-variables

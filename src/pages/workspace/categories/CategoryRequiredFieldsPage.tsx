@@ -81,7 +81,16 @@ function CategoryRequiredFieldsPage({
                             </View>
                         </View>
                     </OfflineWithFeedback>
-                    {isAttendeeTrackingEnabled(policy) && (
+                    {/* 🐛 DEBUG: TC-002 - Checkbox Visibility */}
+                    {(() => {
+                        const trackingEnabled = isAttendeeTrackingEnabled(policy);
+                        console.log('[TC-002] CategoryRequiredFieldsPage - Policy ID:', policyID);
+                        console.log('[TC-002] CategoryRequiredFieldsPage - Category:', categoryName);
+                        console.log('[TC-002] CategoryRequiredFieldsPage - Raw policy.isAttendeeTrackingEnabled:', policy?.isAttendeeTrackingEnabled);
+                        console.log('[TC-002] CategoryRequiredFieldsPage - isAttendeeTrackingEnabled(policy):', trackingEnabled);
+                        console.log('[TC-002] CategoryRequiredFieldsPage - Checkbox will render:', trackingEnabled);
+                        return trackingEnabled;
+                    })() && (
                         <OfflineWithFeedback pendingAction={policyCategory?.pendingFields?.areAttendeesRequired}>
                             <View style={[styles.mh5]}>
                                 <View style={[styles.flexRow, styles.mv5, styles.mr2, styles.alignItemsCenter, styles.justifyContentBetween]}>

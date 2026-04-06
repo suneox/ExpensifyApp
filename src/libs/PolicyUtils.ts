@@ -818,7 +818,14 @@ function isControlPolicy(policy: OnyxEntry<Policy>): boolean {
  * on Control policies when the property is undefined.
  */
 function isAttendeeTrackingEnabled(policy: OnyxEntry<Policy>): boolean {
-    return (isControlPolicy(policy) && policy?.isAttendeeTrackingEnabled) ?? true;
+    const result = (isControlPolicy(policy) && policy?.isAttendeeTrackingEnabled) ?? true;
+    // 🐛 DEBUG: TC-001 - Toggle State
+    console.log('[TC-001] isAttendeeTrackingEnabled() - Policy ID:', policy?.id);
+    console.log('[TC-001] isAttendeeTrackingEnabled() - Policy type:', policy?.type);
+    console.log('[TC-001] isAttendeeTrackingEnabled() - Raw value:', policy?.isAttendeeTrackingEnabled);
+    console.log('[TC-001] isAttendeeTrackingEnabled() - Is Control:', isControlPolicy(policy));
+    console.log('[TC-001] isAttendeeTrackingEnabled() - Final result:', result);
+    return result;
 }
 
 /**
