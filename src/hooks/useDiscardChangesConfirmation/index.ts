@@ -64,6 +64,7 @@ function useDiscardChangesConfirmation({getHasUnsavedChanges, onCancel, onVisibi
 
                 e.preventDefault();
                 blockedNavigationAction.current = e.data.action;
+                shouldNavigateBack.current = true;
                 navigateAfterInteraction(showDiscardModal);
             },
             [getHasUnsavedChanges, isFocused, isEnabled, showDiscardModal],
