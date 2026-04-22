@@ -12,7 +12,7 @@ import type {PlatformStackNavigationProp} from '@libs/Navigation/PlatformStackNa
 import type {RootNavigatorParamList} from '@libs/Navigation/types';
 import type UseDiscardChangesConfirmationOptions from './types';
 
-function useDiscardChangesConfirmation({getHasUnsavedChanges, onCancel, onVisibilityChange, isEnabled = true}: UseDiscardChangesConfirmationOptions) {
+function useDiscardChangesConfirmation({getHasUnsavedChanges, onCancel, onVisibilityChange, isEnabled = true, shouldScopeRecoveryToFocus = false}: UseDiscardChangesConfirmationOptions) {
     const navigation = useNavigation<PlatformStackNavigationProp<RootNavigatorParamList>>();
     const isFocused = useIsFocused();
     const {translate} = useLocalize();
@@ -78,7 +78,7 @@ function useDiscardChangesConfirmation({getHasUnsavedChanges, onCancel, onVisibi
      * So we need to go forward to get back to the current page.
      */
     useEffect(() => {
-        if (!isEnabled) {
+        if (!isEnabled || (shouldScopeRecoveryToFocus && !isFocused)) {
             return undefined;
         }
         const unsubscribe = navigation.addListener('transitionStart', ({data: {closing}}) => {
@@ -97,7 +97,7 @@ function useDiscardChangesConfirmation({getHasUnsavedChanges, onCancel, onVisibi
         });
 
         return unsubscribe;
-    }, [navigation, getHasUnsavedChanges, isFocused, isEnabled, showDiscardModal]);
+    }, [navigation, getHasUnsavedChanges, isFocused, isEnabled, shouldScopeRecoveryToFocus, showDiscardModal]);
 
     /**
      * When the screen loses focus (or is disabled) while the discard modal is open,

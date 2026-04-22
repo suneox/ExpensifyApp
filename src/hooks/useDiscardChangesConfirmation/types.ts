@@ -3,6 +3,7 @@ type UseDiscardChangesConfirmationOptions = {
     onCancel?: () => void;
     onVisibilityChange?: (visible: boolean) => void;
     isEnabled?: boolean;
+    shouldScopeRecoveryToFocus?: boolean;
 };
 
 export default UseDiscardChangesConfirmationOptions;

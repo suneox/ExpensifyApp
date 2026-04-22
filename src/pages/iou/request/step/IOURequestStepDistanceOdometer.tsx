@@ -558,6 +558,7 @@ function IOURequestStepDistanceOdometer({
 
     useDiscardChangesConfirmation({
         isEnabled: shouldEnableDiscardConfirmation,
+        shouldScopeRecoveryToFocus: true,
         getHasUnsavedChanges: () => {
             const hasReadingChanges = startReadingRef.current !== initialStartReadingRef.current || endReadingRef.current !== initialEndReadingRef.current;
             const hasImageChanges = transaction?.comment?.odometerStartImage !== initialStartImageRef.current || transaction?.comment?.odometerEndImage !== initialEndImageRef.current;
