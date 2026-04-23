@@ -70,12 +70,15 @@ function ShareBankAccount({route}: ShareBankAccountProps) {
     };
     useEffect(() => {
         return () => {
-            if (!shouldShowSuccess) {
-                return;
+            // Always clear errors when leaving the page, not just on success
+            if (bankAccountID) {
+                clearShareBankAccountErrors(Number(bankAccountID));
             }
-            clearShareBankAccount();
+            if (shouldShowSuccess) {
+                clearShareBankAccount();
+            }
         };
-    }, [shouldShowSuccess]);
+    }, [shouldShowSuccess, bankAccountID]);
 
     useEffect(() => {
         if (isOffline) {
@@ -213,7 +216,7 @@ function ShareBankAccount({route}: ShareBankAccountProps) {
                                     <ErrorMessageRow
                                         errors={sharedBankAccountData?.errors}
                                         errorRowStyles={[styles.mv3]}
-                                        onDismiss={clearShareBankAccountErrors}
+                                        onDismiss={() => clearShareBankAccountErrors(Number(bankAccountID))}
                                     />
                                 }
                                 containerStyles={[styles.flexReset, styles.flexGrow0, styles.flexShrink0, styles.flexBasisAuto]}
