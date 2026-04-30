@@ -1,5 +1,5 @@
 import type {RouteProp} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import type {ColumnRole} from '@components/ImportColumn';
 import ImportSpreadsheetColumns from '@components/ImportSpreadsheetColumns';
@@ -9,6 +9,7 @@ import useCloseImportPage from '@hooks/useCloseImportPage';
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import usePolicy from '@hooks/usePolicy';
+import {setColumnName} from '@libs/actions/ImportSpreadsheet';
 import {importPolicyCategories} from '@libs/actions/Policy/Category';
 import {findDuplicate, generateColumnNames} from '@libs/importSpreadsheetUtils';
 import createDynamicRoute from '@libs/Navigation/helpers/dynamicRoutesUtils/createDynamicRoute';
@@ -126,6 +127,9 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
         }
 
         const columns = Object.values(spreadsheet?.columns ?? {});
+        console.debug('📊 [DEBUG] All columns mapping:', JSON.stringify(spreadsheet?.columns, null, 2));
+        console.debug('📊 [DEBUG] Columns array:', JSON.stringify(columns, null, 2));
+
         const categoriesNamesColumn = columns.findIndex((column) => column === CONST.CSV_IMPORT_COLUMNS.NAME);
         const categoriesGLCodeColumn = columns.findIndex((column) => column === CONST.CSV_IMPORT_COLUMNS.GL_CODE);
         const categoriesEnabledColumn = columns.findIndex((column) => column === CONST.CSV_IMPORT_COLUMNS.ENABLED);
@@ -136,6 +140,21 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
         const categoriesGLCode = categoriesGLCodeColumn !== -1 ? spreadsheet?.data[categoriesGLCodeColumn].map((glCode) => glCode) : [];
         const categoriesMaxAmountNoReceipt = categoriesMaxAmountNoReceiptColumn !== -1 ? spreadsheet?.data[categoriesMaxAmountNoReceiptColumn] : [];
         const categoriesMaxAmountNoItemizedReceipt = categoriesMaxAmountNoItemizedReceiptColumn !== -1 ? spreadsheet?.data[categoriesMaxAmountNoItemizedReceiptColumn] : [];
+
+        console.debug(
+            '📊 [DEBUG] Receipt column data found:',
+            JSON.stringify(
+                {
+                    hasMaxAmountNoReceipt: categoriesMaxAmountNoReceiptColumn !== -1,
+                    hasMaxAmountNoItemizedReceipt: categoriesMaxAmountNoItemizedReceiptColumn !== -1,
+                    maxAmountNoReceiptData: categoriesMaxAmountNoReceipt,
+                    maxAmountNoItemizedReceiptData: categoriesMaxAmountNoItemizedReceipt,
+                },
+                null,
+                2,
+            ),
+        );
+
         const categories = categoriesNames?.slice(containsHeader ? 1 : 0).map((name, index) => {
             const categoryAlreadyExists = policyCategories?.[name];
             const existingGLCodeOrDefault = categoryAlreadyExists?.['GL Code'] ?? '';
@@ -144,6 +163,20 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
             const parsedMaxAmountNoReceipt = categoriesMaxAmountNoReceiptColumn !== -1 ? parseCsvReceiptValue(categoriesMaxAmountNoReceipt?.[dataIndex]?.toString()) : undefined;
             const parsedMaxAmountNoItemizedReceipt =
                 categoriesMaxAmountNoItemizedReceiptColumn !== -1 ? parseCsvReceiptValue(categoriesMaxAmountNoItemizedReceipt?.[dataIndex]?.toString()) : undefined;
+
+            console.debug(
+                `📊 [DEBUG] Category "${name}" (row ${dataIndex}):`,
+                JSON.stringify(
+                    {
+                        rawReceiptValue: categoriesMaxAmountNoReceipt?.[dataIndex],
+                        rawItemizedValue: categoriesMaxAmountNoItemizedReceipt?.[dataIndex],
+                        parsedMaxAmountNoReceipt,
+                        parsedMaxAmountNoItemizedReceipt,
+                    },
+                    null,
+                    2,
+                ),
+            );
 
             // Apply normalization: if itemized receipts required but receipts not required, force both to required
             let normalizedMaxAmountNoReceipt = parsedMaxAmountNoReceipt;
@@ -155,7 +188,19 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
                 normalizedMaxAmountNoReceipt = 0;
             }
 
-            return {
+            console.debug(
+                `📊 [DEBUG] Category "${name}" after normalization:`,
+                JSON.stringify(
+                    {
+                        normalizedMaxAmountNoReceipt,
+                        normalizedMaxAmountNoItemizedReceipt,
+                    },
+                    null,
+                    2,
+                ),
+            );
+
+            const categoryObject = {
                 name,
                 enabled: categoriesEnabledColumn !== -1 ? ['true', 'yes'].includes(categoriesEnabled?.[dataIndex]?.toString().toLowerCase() ?? '') : true,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -163,7 +208,14 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
                 ...(normalizedMaxAmountNoReceipt !== undefined && {maxAmountNoReceipt: normalizedMaxAmountNoReceipt}),
                 ...(normalizedMaxAmountNoItemizedReceipt !== undefined && {maxAmountNoItemizedReceipt: normalizedMaxAmountNoItemizedReceipt}),
             };
+
+            console.debug(`📊 [DEBUG] Category "${name}" final object:`, JSON.stringify(categoryObject, null, 2));
+
+            return categoryObject;
         });
+
+        console.debug('📊 [DEBUG] All categories to import:', JSON.stringify(categories, null, 2));
+        console.debug('📊 [DEBUG] Categories JSON payload:', JSON.stringify(categories, null, 2));
 
         if (categories) {
             setIsImportingCategories(true);
