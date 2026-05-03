@@ -34,7 +34,7 @@ function parseCsvReceiptValue(raw: string | undefined): number | null | undefine
     }
     const trimmed = raw.trim().toLowerCase();
     if (!trimmed || trimmed === 'default') {
-        return null;
+        return undefined;
     }
     if (trimmed === 'required' || trimmed === 'always_required') {
         return 0;
@@ -136,6 +136,8 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
         const categoriesGLCode = categoriesGLCodeColumn !== -1 ? spreadsheet?.data[categoriesGLCodeColumn].map((glCode) => glCode) : [];
         const categoriesMaxAmountNoReceipt = categoriesMaxAmountNoReceiptColumn !== -1 ? spreadsheet?.data[categoriesMaxAmountNoReceiptColumn] : [];
         const categoriesMaxAmountNoItemizedReceipt = categoriesMaxAmountNoItemizedReceiptColumn !== -1 ? spreadsheet?.data[categoriesMaxAmountNoItemizedReceiptColumn] : [];
+        console.log(`-[ImportedCategoriesPage]:categoriesMaxAmountNoReceipt`, categoriesMaxAmountNoReceipt);
+        console.log(`-[ImportedCategoriesPage]:categoriesMaxAmountNoItemizedReceipt`, categoriesMaxAmountNoItemizedReceipt);
         const categories = categoriesNames?.slice(containsHeader ? 1 : 0).map((name, index) => {
             const categoryAlreadyExists = policyCategories?.[name];
             const existingGLCodeOrDefault = categoryAlreadyExists?.['GL Code'] ?? '';
@@ -144,27 +146,19 @@ function ImportedCategoriesPage({route}: ImportedCategoriesPageProps) {
             const parsedMaxAmountNoReceipt = categoriesMaxAmountNoReceiptColumn !== -1 ? parseCsvReceiptValue(categoriesMaxAmountNoReceipt?.[dataIndex]?.toString()) : undefined;
             const parsedMaxAmountNoItemizedReceipt =
                 categoriesMaxAmountNoItemizedReceiptColumn !== -1 ? parseCsvReceiptValue(categoriesMaxAmountNoItemizedReceipt?.[dataIndex]?.toString()) : undefined;
-
-            // Apply normalization: if itemized receipts required but receipts not required, force both to required
-            let normalizedMaxAmountNoReceipt = parsedMaxAmountNoReceipt;
-            let normalizedMaxAmountNoItemizedReceipt = parsedMaxAmountNoItemizedReceipt;
-            if (normalizedMaxAmountNoReceipt === CONST.DISABLED_MAX_EXPENSE_VALUE && normalizedMaxAmountNoItemizedReceipt !== undefined) {
-                normalizedMaxAmountNoItemizedReceipt = CONST.DISABLED_MAX_EXPENSE_VALUE;
-            }
-            if (normalizedMaxAmountNoItemizedReceipt === 0 && normalizedMaxAmountNoReceipt !== undefined) {
-                normalizedMaxAmountNoReceipt = 0;
-            }
+            console.log(`-[ImportedCategoriesPage]:`, {name, index, parsedMaxAmountNoReceipt, parsedMaxAmountNoItemizedReceipt});
 
             return {
                 name,
                 enabled: categoriesEnabledColumn !== -1 ? ['true', 'yes'].includes(categoriesEnabled?.[dataIndex]?.toString().trim().toLowerCase() ?? '') : true,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 'GL Code': categoriesGLCodeColumn !== -1 ? (categoriesGLCode?.[dataIndex] ?? '') : existingGLCodeOrDefault,
-                ...(normalizedMaxAmountNoReceipt !== undefined && {maxAmountNoReceipt: normalizedMaxAmountNoReceipt}),
-                ...(normalizedMaxAmountNoItemizedReceipt !== undefined && {maxAmountNoItemizedReceipt: normalizedMaxAmountNoItemizedReceipt}),
+                ...(parsedMaxAmountNoReceipt !== undefined && {maxAmountNoReceipt: parsedMaxAmountNoReceipt}),
+                ...(parsedMaxAmountNoItemizedReceipt !== undefined && {maxAmountNoItemizedReceipt: parsedMaxAmountNoItemizedReceipt}),
             };
         });
-
+        console.log(`-[ImportedCategoriesPage]:spreadsheet`, spreadsheet);
+        console.log(`-[ImportedCategoriesPage]:categories`, categories);
         if (categories) {
             setIsImportingCategories(true);
             importPolicyCategories(policyID, categories, policyCategories);
