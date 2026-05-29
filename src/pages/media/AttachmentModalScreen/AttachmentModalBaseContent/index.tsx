@@ -32,6 +32,7 @@ import {isEmptyObject} from '@src/types/utils/EmptyObject';
 import viewRef from '@src/types/utils/viewRef';
 import {AttachmentStateContext} from './AttachmentStateContextProvider';
 import type {AttachmentModalBaseContentProps} from './types';
+import { isHighResolutionImage } from '@libs/fileDownload/FileUtils';
 
 function AttachmentModalBaseContent({
     source: sourceProp = '',
@@ -124,10 +125,6 @@ function AttachmentModalBaseContent({
         }
     }, []);
 
-    useEffect(() => {
-        setFile(filesProp ?? fallbackFile);
-    }, [filesProp, fallbackFile, setFile]);
-
     /**
      * Keeps the attachment source in sync with the attachment displayed currently in the carousel.
      */
@@ -189,13 +186,14 @@ function AttachmentModalBaseContent({
     const {isAttachmentLoaded} = useContext(AttachmentStateContext);
     const isEReceipt = transaction && !hasReceiptSource(transaction) && hasEReceipt(transaction);
     const isFileImage = typeof source !== 'function' && checkIsFileImage(source, fileToDisplay?.name);
+    const isHighResolution = isFileImage ? isHighResolutionImage({width: fileToDisplay?.width, height: fileToDisplay?.height}) : false;
     const shouldShowDownloadButton = useMemo(() => {
         const isValidContext = !isEmptyObject(report) || type === CONST.ATTACHMENT_TYPE.SEARCH || shouldAllowDownloadOutsideReportContext;
         if (!isValidContext || isErrorInAttachment(source) || isEReceipt) {
             return false;
         }
 
-        return !!onDownloadAttachment && isDownloadButtonReadyToBeShown && !shouldShowNotFoundPage && !isOffline && !isLocalSource && (!isFileImage || isAttachmentLoaded?.(source));
+        return !!onDownloadAttachment && isDownloadButtonReadyToBeShown && !shouldShowNotFoundPage && !isOffline && !isLocalSource && (!isFileImage || isHighResolution || isAttachmentLoaded?.(source));
     }, [
         isAttachmentLoaded,
         isDownloadButtonReadyToBeShown,
@@ -210,6 +208,7 @@ function AttachmentModalBaseContent({
         source,
         type,
         isEReceipt,
+        isHighResolution,
     ]);
 
     // We need to pass a shared value of type boolean to the context, so `falseSV` acts as a default value.
