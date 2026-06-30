@@ -37,6 +37,8 @@ function SAMLSignInPage() {
      */
     const handleNavigationStateChange = useCallback(
         (url: string) => {
+            // eslint-disable-next-line no-console
+            console.log('[SSO-DEBUG][ND][SIGN-IN] handleNavigationStateChange callback url', {url});
             // If we've gotten a callback then remove the option to navigate back to the sign-in page
             if (url.includes('loginCallback')) {
                 shouldShowNavigation(false);
@@ -84,8 +86,12 @@ function SAMLSignInPage() {
             return;
         }
         hasOpenedAuthSession.current = true;
+        // eslint-disable-next-line no-console
+        console.log('[SSO-DEBUG][ND][SIGN-IN] opening auth session', {SAMLUrl, expectedURL: CONST.SAML_REDIRECT_URL});
         openAuthSessionAsync(SAMLUrl, CONST.SAML_REDIRECT_URL)
             .then((response: WebBrowserAuthSessionResult) => {
+                // eslint-disable-next-line no-console
+                console.log('[SSO-DEBUG][ND][SIGN-IN] openAuthSessionAsync result', {type: response.type, url: response.type === 'success' ? response.url : undefined});
                 if (response.type !== 'success') {
                     handleExitSAMLFlow();
                     return;
