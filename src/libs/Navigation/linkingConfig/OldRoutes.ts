@@ -1,5 +1,11 @@
 const oldRoutes: Record<string, string> = {
     /* eslint-disable @typescript-eslint/naming-convention */
+    // Per diem time step migrated to dynamic routes (#83850). Dynamic suffixes are namespaced `per-diem-*` because
+    // dynamic route paths must be globally unique across DYNAMIC_ROUTES (react-navigation flattens them). Edit variant
+    // redirects to the confirmation-based suffix; the wizard variant to the destination-based suffix. Query is not
+    // preserved here (the trailing wildcard would swallow it) - acceptable because callers no longer append `?backTo=`.
+    '/*/*/time/*/*/edit': '/$1/$2/confirmation/$3/$4/per-diem-time-edit',
+    '/*/*/time/*/*': '/$1/$2/destination/$3/$4/per-diem-time',
     '/settings/*/category/*/edit': '/settings/$1/categories/category-settings/$2/category-edit',
     '/settings/*/category/*': '/settings/$1/categories/category-settings/$2',
     '/settings/*/tags/*/edit': '/settings/$1/tags/settings-tags-edit/$2',
