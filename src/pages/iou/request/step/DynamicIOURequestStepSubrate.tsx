@@ -11,6 +11,7 @@ import TextInput from '@components/TextInput';
 import ValuePicker from '@components/ValuePicker';
 
 import useConfirmModal from '@hooks/useConfirmModal';
+import useDynamicBackPath from '@hooks/useDynamicBackPath';
 import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import usePolicyForTransaction from '@hooks/usePolicyForTransaction';
@@ -27,8 +28,8 @@ import {addSubrate, removeSubrate, updateSubrate} from '@userActions/IOU/PerDiem
 import CONST from '@src/CONST';
 import type {TranslationPaths} from '@src/languages/types';
 import ONYXKEYS from '@src/ONYXKEYS';
-import ROUTES from '@src/ROUTES';
-import type SCREENS from '@src/SCREENS';
+import ROUTES, {DYNAMIC_ROUTES} from '@src/ROUTES';
+import SCREENS from '@src/SCREENS';
 import type * as OnyxTypes from '@src/types/onyx';
 import type {Subrate} from '@src/types/onyx/Policy';
 import {isEmptyObject} from '@src/types/utils/EmptyObject';
@@ -45,7 +46,7 @@ import type {WithWritableReportOrNotFoundProps} from './withWritableReportOrNotF
 import withFullTransactionOrNotFound from './withFullTransactionOrNotFound';
 import withWritableReportOrNotFound from './withWritableReportOrNotFound';
 
-type IOURequestStepSubrateProps = WithWritableReportOrNotFoundProps<typeof SCREENS.MONEY_REQUEST.STEP_SUBRATE> & {
+type DynamicIOURequestStepSubrateProps = WithWritableReportOrNotFoundProps<typeof SCREENS.MONEY_REQUEST.DYNAMIC_STEP_SUBRATE | typeof SCREENS.MONEY_REQUEST.DYNAMIC_STEP_SUBRATE_EDIT> & {
     transaction: OnyxEntry<OnyxTypes.Transaction>;
 
     /** The report linked to the transaction */
@@ -70,13 +71,19 @@ function getSubrateOptions(subRates: Subrate[], filledSubRates: CommentSubrate[]
         }));
 }
 
-function IOURequestStepSubrate({
+function DynamicIOURequestStepSubrate({
     route: {
-        params: {action, backTo, iouType, pageIndex, reportID, transactionID, backToReport},
+        params: {action, iouType, pageIndex, reportID, transactionID, backToReport},
+        name: routeName,
     },
     transaction,
     report,
-}: IOURequestStepSubrateProps) {
+}: DynamicIOURequestStepSubrateProps) {
+    const isEditPage = routeName === SCREENS.MONEY_REQUEST.DYNAMIC_STEP_SUBRATE_EDIT;
+    // Back removes this step's dynamic suffix. In edit mode (`subrate-edit/:pageIndex`) the suffix sits on the
+    // confirmation base, so back returns to confirmation; in the wizard flow (`subrate/:pageIndex`) it sits on the
+    // time base, so back returns to the time step.
+    const backPath = useDynamicBackPath(isEditPage ? DYNAMIC_ROUTES.MONEY_REQUEST_STEP_SUBRATE_EDIT.path : DYNAMIC_ROUTES.MONEY_REQUEST_STEP_SUBRATE.path);
     const styles = useThemeStyles();
     const iouPolicyID = getIOURequestPolicyID(transaction, report);
     const {policy} = usePolicyForTransaction({
@@ -123,11 +130,7 @@ function IOURequestStepSubrate({
     const validOptions = getSubrateOptions(allPossibleSubrates, allSubrates, currentSubrate?.id);
 
     const goBack = () => {
-        if (backTo) {
-            Navigation.goBack(backTo);
-            return;
-        }
-        Navigation.goBack(ROUTES.MONEY_REQUEST_STEP_TIME.getRoute(action, iouType, transactionID, reportID, backToReport));
+        Navigation.goBack(backPath);
     };
 
     const validate = (values: FormOnyxValues<typeof ONYXKEYS.FORMS.MONEY_REQUEST_SUBRATE_FORM>): Partial<Record<string, TranslationPaths>> => {
@@ -163,7 +166,7 @@ function IOURequestStepSubrate({
             updateSubrate(transaction, pageIndex, quantityInt, subrateVal, name, rate);
         }
 
-        if (backTo) {
+        if (isEditPage) {
             goBack();
         } else {
             Navigation.navigate(ROUTES.MONEY_REQUEST_STEP_CONFIRMATION.getRoute(action, iouType, transactionID, reportID, backToReport));
@@ -206,11 +209,11 @@ function IOURequestStepSubrate({
         <ScreenWrapper
             includeSafeAreaPaddingBottom
             shouldEnableMaxHeight
-            testID={IOURequestStepSubrate.displayName}
+            testID={DynamicIOURequestStepSubrate.displayName}
         >
             <FullPageNotFoundView shouldShow={shouldDisableEditor}>
                 <HeaderWithBackButton
-                    title={backTo ? translate('common.subrate') : tabTitles[iouType]}
+                    title={isEditPage ? translate('common.subrate') : tabTitles[iouType]}
                     shouldShowBackButton
                     onBackButtonPress={goBack}
                     shouldShowThreeDotsButton={shouldShowThreeDotsButton}
@@ -282,6 +285,6 @@ function IOURequestStepSubrate({
     );
 }
 
-IOURequestStepSubrate.displayName = 'IOURequestStepSubrate';
+DynamicIOURequestStepSubrate.displayName = 'DynamicIOURequestStepSubrate';
 
-export default withWritableReportOrNotFound(withFullTransactionOrNotFound(IOURequestStepSubrate));
+export default withWritableReportOrNotFound(withFullTransactionOrNotFound(DynamicIOURequestStepSubrate));

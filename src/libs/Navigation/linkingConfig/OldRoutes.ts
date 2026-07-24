@@ -1,5 +1,12 @@
 const oldRoutes: Record<string, string> = {
     /* eslint-disable @typescript-eslint/naming-convention */
+    // Per diem subrate step migrated to dynamic routes (#83850). Dynamic suffixes are namespaced `per-diem-*` because
+    // dynamic route paths must be globally unique across DYNAMIC_ROUTES (react-navigation flattens them). The
+    // `:pageIndex` path param is preserved as the final segment. Edit variant redirects to the confirmation-based
+    // suffix; the wizard variant to the time-based suffix. Query/backToReport is not preserved (accepted - callers
+    // dropped them).
+    '/*/*/subrate/*/*/edit/*': '/$1/$2/confirmation/$3/$4/per-diem-subrate-edit/$5',
+    '/*/*/subrate/*/*/*': '/$1/$2/time/$3/$4/per-diem-subrate/$5',
     '/settings/*/category/*/edit': '/settings/$1/categories/category-settings/$2/category-edit',
     '/settings/*/category/*': '/settings/$1/categories/category-settings/$2',
     '/settings/*/tags/*/edit': '/settings/$1/tags/settings-tags-edit/$2',

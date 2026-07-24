@@ -403,4 +403,20 @@ describe('getBestMatchingPath', () => {
         expect(getMatchingNewRoute('/workspaces/p123/expensify-card/card-details/456')).toBe('/workspaces/p123/expensify-card/card-details/456');
         expect(getMatchingNewRoute('/workspaces/p123/expensify-card/card-details/456/edit/limit')).toBe('/workspaces/p123/expensify-card/card-details/456/edit/limit');
     });
+
+    it('redirects legacy per diem subrate step to the new time-based dynamic route keeping the pageIndex (#83850)', () => {
+        expect(getMatchingNewRoute('/create/submit/subrate/123/456/0')).toBe('/create/submit/time/123/456/per-diem-subrate/0');
+    });
+
+    // NOTE: the redirect keeps the trailing `:pageIndex` and appends the dynamic suffix. Query / legacy backToReport are
+    // not preserved (the greedy trailing wildcard captures the final segment only) - acceptable because callers no
+    // longer append `?backTo=` and backToReport now lives on the base path, not the subrate suffix.
+    it('redirects legacy per diem subrate edit step to the new confirmation-based dynamic route (#83850)', () => {
+        expect(getMatchingNewRoute('/create/submit/subrate/123/456/edit/2')).toBe('/create/submit/confirmation/123/456/per-diem-subrate-edit/2');
+    });
+
+    it('does not redirect the already-migrated per diem subrate dynamic routes (#83850)', () => {
+        expect(getMatchingNewRoute('/create/submit/time/123/456/per-diem-subrate/0')).toBe(undefined);
+        expect(getMatchingNewRoute('/create/submit/confirmation/123/456/per-diem-subrate-edit/2')).toBe(undefined);
+    });
 });

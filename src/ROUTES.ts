@@ -235,6 +235,16 @@ const DYNAMIC_ROUTES = {
         ],
         getRoute: (cardID: string) => `missing-personal-details/${cardID}/confirm-magic-code` as const,
     },
+    MONEY_REQUEST_STEP_SUBRATE: {
+        path: 'per-diem-subrate/:pageIndex',
+        entryScreens: [SCREENS.MONEY_REQUEST.STEP_TIME],
+        getRoute: (pageIndex: string | number = 0) => `per-diem-subrate/${pageIndex}` as const,
+    },
+    MONEY_REQUEST_STEP_SUBRATE_EDIT: {
+        path: 'per-diem-subrate-edit/:pageIndex',
+        entryScreens: [SCREENS.MONEY_REQUEST.STEP_CONFIRMATION],
+        getRoute: (pageIndex: string | number) => `per-diem-subrate-edit/${pageIndex}` as const,
+    },
     PROFILE: {
         path: 'a/:accountID',
         entryScreens: ['*'],
@@ -1948,11 +1958,6 @@ const ROUTES = {
         getRoute: (action: IOUAction, iouType: IOUType, transactionID: string, reportID: string, backToReport?: string, backTo = '') =>
             getUrlWithBackToParam(`${action as string}/${iouType as string}/time/${transactionID}/${reportID}${backToReport ? `/${backToReport}` : ''}`, backTo),
     },
-    MONEY_REQUEST_STEP_SUBRATE: {
-        route: ':action/:iouType/subrate/:transactionID/:reportID/:backToReport?/:pageIndex',
-        getRoute: (action: IOUAction, iouType: IOUType, transactionID: string, reportID: string, backToReport?: string, backTo = '') =>
-            getUrlWithBackToParam(`${action as string}/${iouType as string}/subrate/${transactionID}/${reportID}${backToReport ? `/${backToReport}` : ''}/0`, backTo),
-    },
     MONEY_REQUEST_STEP_DESTINATION_EDIT: {
         route: ':action/:iouType/destination/:transactionID/:reportID/edit',
         getRoute: (action: IOUAction, iouType: IOUType, transactionID: string, reportID: string, backTo = '') =>
@@ -1962,11 +1967,6 @@ const ROUTES = {
         route: ':action/:iouType/time/:transactionID/:reportID/edit',
         getRoute: (action: IOUAction, iouType: IOUType, transactionID: string, reportID: string, backTo = '') =>
             getUrlWithBackToParam(`${action as string}/${iouType as string}/time/${transactionID}/${reportID}/edit`, backTo),
-    },
-    MONEY_REQUEST_STEP_SUBRATE_EDIT: {
-        route: ':action/:iouType/subrate/:transactionID/:reportID/edit/:pageIndex',
-        getRoute: (action: IOUAction, iouType: IOUType, transactionID: string, reportID: string, pageIndex = 0, backTo = '') =>
-            getUrlWithBackToParam(`${action as string}/${iouType as string}/subrate/${transactionID}/${reportID}/edit/${pageIndex}`, backTo),
     },
     MONEY_REQUEST_STEP_REPORT: {
         route: ':action/:iouType/report/:transactionID/:reportID/:reportActionID?',
