@@ -53,6 +53,17 @@ const combinePathAndSuffix = (basePath: string, suffixWithQuery: string): Route 
     const combinedPath = normalizedBasePath === '/' ? `/${suffixPath}` : `${normalizedBasePath}/${suffixPath}`;
     const mergedQuery = mergeQueryStrings(baseQuery, suffixQuery);
 
+    // [97470] TEMP DEBUG — remove before merge
+    if (suffixPath === 'ai-features-promo' || normalizedBasePath === '/' || normalizedBasePath?.startsWith('//')) {
+        console.log('[97470][3] createDynamicRoute.combine', {
+            basePath,
+            normalizedBasePath,
+            suffixPath,
+            combinedPath,
+            hitRootSpecialCase: normalizedBasePath === '/',
+        });
+    }
+
     return `${combinedPath}${mergedQuery}` as Route;
 };
 

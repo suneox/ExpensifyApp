@@ -156,6 +156,21 @@ function getPathFromStateWithDynamicRoute(state: State): string {
     const [basePathWithoutQuery, baseQuery] = splitPathAndQuery(basePath);
     const [suffixPath, suffixQuery] = splitPathAndQuery(actualSuffix);
 
+    // [97470] TEMP DEBUG — remove before merge
+    if (suffixPath === 'ai-features-promo' || basePathWithoutQuery === '/' || basePathWithoutQuery?.startsWith('//')) {
+        console.log('[97470][4] getPathFromState.combine', {
+            screenName,
+            basePath,
+            basePathWithoutQuery,
+            suffixPath,
+            willProduce: `${basePathWithoutQuery}/${suffixPath}`,
+            reducedFocusedRoute: findFocusedRouteWithOnyxTabGuard(reducedState)?.name,
+        });
+        if (`${basePathWithoutQuery}/${suffixPath}`.startsWith('//')) {
+            console.error('[97470][4] ⚠️ DOUBLE SLASH about to be pushed:', `${basePathWithoutQuery}/${suffixPath}`);
+        }
+    }
+
     const mergedParams = new URLSearchParams(baseQuery ?? '');
     const suffixParams = new URLSearchParams(suffixQuery ?? '');
     for (const [key, value] of suffixParams) {
@@ -170,11 +185,21 @@ function getPathFromState(state: State): string {
     const focusedRoute = findFocusedRouteWithOnyxTabGuard(state);
     const screenName = focusedRoute?.name ?? '';
 
-    if (isDynamicRouteScreen(screenName as Screen)) {
-        return getPathFromStateWithDynamicRoute(state);
+    const result = isDynamicRouteScreen(screenName as Screen) ? getPathFromStateWithDynamicRoute(state) : RNGetPathFromState(state, config);
+
+    // [97470] TEMP DEBUG — remove before merge.
+    // Catches EVERY path that leaves this module starting with '//', whichever branch produced it,
+    // and prints the caller stack so we can tell which consumer is about to push it.
+    if (result.startsWith('//')) {
+        console.error('[97470][RESULT] getPathFromState returned a protocol-relative path:', result, {
+            screenName,
+            branch: isDynamicRouteScreen(screenName as Screen) ? 'dynamicRoute' : 'RNGetPathFromState',
+            rootRouteNames: state?.routes?.map((r) => r.name),
+        });
+        console.trace('[97470][RESULT] caller stack');
     }
 
-    return RNGetPathFromState(state, config);
+    return result;
 }
 
 export default getPathFromState;

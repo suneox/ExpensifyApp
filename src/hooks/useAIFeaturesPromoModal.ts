@@ -95,12 +95,27 @@ function useAIFeaturesPromoModal(session: OnyxEntry<Session>) {
                         return;
                     }
                     const lastRoute = navigationRef.getRootState?.()?.routes.at(-1)?.name;
+
+                    // [97470] TEMP DEBUG — remove before merge
+                    console.log('[97470][2] useAIFeaturesPromoModal.aboutToNavigate', {
+                        lastRoute,
+                        blockedByGuard: lastRoute === NAVIGATORS.SHARE_MODAL_NAVIGATOR || lastRoute === SCREENS.NOT_FOUND,
+                        activeRoute: Navigation.getActiveRoute(),
+                        rootRoutes: navigationRef.getRootState?.()?.routes.map((r) => r.name),
+                        browserURL: typeof window === 'undefined' ? undefined : window.location.pathname,
+                    });
+
                     if (lastRoute === NAVIGATORS.SHARE_MODAL_NAVIGATOR || lastRoute === SCREENS.NOT_FOUND) {
                         return;
                     }
                     Log.info('[useAIFeaturesPromoModal] Navigating to AI features promo modal');
                     hasRedirectedToAIFeaturesPromoModal = true;
-                    Navigation.navigate(createDynamicRoute(DYNAMIC_ROUTES.AI_FEATURES_PROMO.path, Navigation.getActiveRoute() || ROUTES.HOME));
+
+                    // [97470] TEMP DEBUG — remove before merge
+                    const debugTarget = createDynamicRoute(DYNAMIC_ROUTES.AI_FEATURES_PROMO.path, Navigation.getActiveRoute() || ROUTES.HOME);
+                    console.log('[97470][2] useAIFeaturesPromoModal.navigateTo', debugTarget);
+
+                    Navigation.navigate(debugTarget);
                 });
             },
             waitForUpcomingTransition: true,

@@ -248,6 +248,11 @@ function getActiveRoute(): string {
 
     const routeFromState = getPathFromState(navigationRef.getRootState());
 
+    // [97470] TEMP DEBUG — remove before merge
+    if (routeFromState.startsWith('//')) {
+        console.error('[97470][getActiveRoute] returning a broken path to callers:', routeFromState);
+    }
+
     if (routeFromState) {
         return routeFromState;
     }

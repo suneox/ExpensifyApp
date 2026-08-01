@@ -45,6 +45,24 @@ function getStateFromPath(path: Route): PartialState<NavigationState> {
         const focusedRoute = findFocusedRouteWithOnyxTabGuard(getStateFromPath(pathWithoutDynamicSuffix) ?? {});
         const entryScreens: ReadonlyArray<Screen | '*'> = DYNAMIC_ROUTES[dynamicRoute as DynamicRouteKey]?.entryScreens ?? [];
 
+        // [97470] TEMP DEBUG — remove before merge
+        if (pattern === 'ai-features-promo') {
+            const accepted = !!focusedRoute?.name && entryScreens.some((s) => s === '*' || s === focusedRoute.name);
+            console.log('[97470][1] getStateFromPath.entryScreens', {
+                path: normalizedPathAfterRedirection,
+                pattern,
+                basePath: pathWithoutDynamicSuffix,
+                baseFocusedRoute: focusedRoute?.name,
+                baseFocusedParams: focusedRoute?.params,
+                entryScreens,
+                accepted,
+                isSelfStack: focusedRoute?.name === 'Dynamic_AIFeaturesPromoModal_Root',
+            });
+            if (accepted && focusedRoute?.name === 'Dynamic_AIFeaturesPromoModal_Root') {
+                console.warn('[97470][1] ⚠️ SELF-STACK accepted — promo suffix stacking on the promo screen itself');
+            }
+        }
+
         if (focusedRoute?.name && entryScreens.some((s) => s === '*' || s === focusedRoute.name)) {
             // Merge the base route's params with params extracted from the dynamic suffix.
             // This gives the dynamic route screen access to all context it needs.
