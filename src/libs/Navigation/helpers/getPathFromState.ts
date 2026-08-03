@@ -141,7 +141,8 @@ function getPathFromStateWithDynamicRoute(state: State): string {
             const tabPath = focusedTab && isScreen(focusedTab.name) ? normalizedConfigs[focusedTab.name]?.path : undefined;
             if (tabPath) {
                 const [suffixPathOnly, suffixQueryOnly] = splitPathAndQuery(actualSuffix);
-                actualSuffix = `${suffixPathOnly}/${tabPath}${suffixQueryOnly ? `?${suffixQueryOnly}` : ''}`;
+                const combinedSuffixPath = suffixPathOnly === '/' ? `/${tabPath}` : `${suffixPathOnly}/${tabPath}`;
+                actualSuffix = `${combinedSuffixPath}${suffixQueryOnly ? `?${suffixQueryOnly}` : ''}`;
             }
         }
     }
@@ -163,7 +164,12 @@ function getPathFromStateWithDynamicRoute(state: State): string {
     }
     const queryString = mergedParams.toString();
 
-    return `${basePathWithoutQuery}/${suffixPath}${queryString ? `?${queryString}` : ''}`;
+    // Mirrors combinePathAndSuffix in createDynamicRoute.ts: a root base must not be concatenated
+    // with another slash, otherwise the path becomes protocol-relative ('//suffix') and the browser
+    // reads the first segment as a host, which history.pushState rejects with a SecurityError.
+    const combinedPath = basePathWithoutQuery === '/' ? `/${suffixPath}` : `${basePathWithoutQuery}/${suffixPath}`;
+
+    return `${combinedPath}${queryString ? `?${queryString}` : ''}`;
 }
 
 function getPathFromState(state: State): string {
