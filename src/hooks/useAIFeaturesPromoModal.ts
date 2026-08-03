@@ -95,7 +95,12 @@ function useAIFeaturesPromoModal(session: OnyxEntry<Session>) {
                         return;
                     }
                     const lastRoute = navigationRef.getRootState?.()?.routes.at(-1)?.name;
-                    if (lastRoute === NAVIGATORS.SHARE_MODAL_NAVIGATOR || lastRoute === SCREENS.NOT_FOUND) {
+                    if (
+                        lastRoute === NAVIGATORS.SHARE_MODAL_NAVIGATOR ||
+                        lastRoute === SCREENS.NOT_FOUND ||
+                        lastRoute === NAVIGATORS.AI_FEATURES_PROMO_MODAL_NAVIGATOR // already on the promo — don't re-open/duplicate
+                    ) {
+                        hasRedirectedToAIFeaturesPromoModal = true; // treat an already-open promo as "already shown"
                         return;
                     }
                     Log.info('[useAIFeaturesPromoModal] Navigating to AI features promo modal');
