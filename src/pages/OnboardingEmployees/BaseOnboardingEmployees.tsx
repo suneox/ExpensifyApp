@@ -12,6 +12,7 @@ import useOnboardingStepCounter from '@hooks/useOnboardingStepCounter';
 import useOnyx from '@hooks/useOnyx';
 import usePermissions from '@hooks/usePermissions';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import type {OnboardingCompanySize} from '@libs/actions/Welcome/OnboardingFlow';
@@ -38,6 +39,7 @@ function BaseOnboardingEmployees({shouldUseNativeStyles, route}: BaseOnboardingE
     const styles = useThemeStyles();
     const {translate} = useLocalize();
     const [onboardingCompanySize] = useOnyx(ONYXKEYS.ONBOARDING_COMPANY_SIZE);
+    const theme = useTheme();
 
     const {onboardingIsMediumOrLargerScreenWidth} = useResponsiveLayout();
     const onboardingStep = useOnboardingStepCounter(SCREENS.ONBOARDING.EMPLOYEES);
@@ -155,9 +157,11 @@ function BaseOnboardingEmployees({shouldUseNativeStyles, route}: BaseOnboardingE
                 shouldShowBackButton={!isEmployeesFirstStep}
                 onBackButtonPress={handleBackButtonPress}
                 shouldDisplayHelpButton={false}
+                title={translate('common.back')}
+                titleColor={theme.icon}
             />
             <Text
-                style={[styles.textHeadlineH1, styles.mb5, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
+                style={[styles.textHeadlineH1, styles.mb5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
                 accessibilityRole={CONST.ROLE.HEADER}
             >
                 {translate('onboarding.employees.title')}

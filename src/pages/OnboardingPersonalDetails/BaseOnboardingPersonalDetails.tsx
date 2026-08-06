@@ -262,7 +262,7 @@ function BaseOnboardingPersonalDetails({currentUserPersonalDetails, shouldUseNat
                 shouldDisplayHelpButton={false}
             />
             <FormProvider
-                style={[styles.flexGrow1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
+                style={[styles.flexGrow1, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
                 formID={ONYXKEYS.FORMS.ONBOARDING_PERSONAL_DETAILS_FORM}
                 validate={validate}
                 onSubmit={handleSubmit}

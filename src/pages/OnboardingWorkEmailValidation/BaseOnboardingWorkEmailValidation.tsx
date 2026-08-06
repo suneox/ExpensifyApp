@@ -7,6 +7,7 @@ import ValidateCodeForm from '@components/ValidateCodeActionModal/ValidateCodeFo
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import AccountUtils from '@libs/AccountUtils';
@@ -80,6 +81,8 @@ function BaseOnboardingWorkEmailValidation({shouldUseNativeStyles}: BaseOnboardi
         MergeIntoAccountAndLogin(workEmail, validateCode, session?.accountID);
     };
 
+    const theme = useTheme();
+
     return (
         <ScreenWrapper
             includeSafeAreaPaddingBottom
@@ -92,16 +95,18 @@ function BaseOnboardingWorkEmailValidation({shouldUseNativeStyles}: BaseOnboardi
                     updateOnboardingValuesAndNavigation(onboardingValues);
                 }}
                 shouldDisplayHelpButton={false}
+                title={translate('common.back')}
+                titleColor={theme.icon}
             />
             {onboardingValues?.isMergingAccountBlocked ? (
-                <View style={[styles.flex1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
+                <View style={[styles.flex1, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
                     <OnboardingMergingAccountBlockedView
                         workEmail={workEmail}
                         isVsb={isVsb}
                     />
                 </View>
             ) : (
-                <View style={[styles.flex1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
+                <View style={[styles.flex1, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
                     <Text
                         style={styles.textHeadlineH1}
                         accessibilityRole={CONST.ROLE.HEADER}

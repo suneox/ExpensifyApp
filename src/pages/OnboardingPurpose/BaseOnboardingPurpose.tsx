@@ -193,7 +193,7 @@ function BaseOnboardingPurpose({shouldUseNativeStyles, shouldEnableMaxHeight, ro
                     shouldDisplayHelpButton={false}
                 />
             </View>
-            <ScrollView style={[styles.flex1, styles.flexGrow1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, paddingHorizontal]}>
+            <ScrollView style={[styles.flex1, styles.flexGrow1, paddingHorizontal]}>
                 <View style={styles.flex1}>
                     <View style={[onboardingIsMediumOrLargerScreenWidth ? styles.flexRow : styles.flexColumn, styles.mb5]}>
                         <Text

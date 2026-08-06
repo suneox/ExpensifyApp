@@ -11,6 +11,7 @@ import {useMemoizedLazyExpensifyIcons, useMemoizedLazyIllustrations} from '@hook
 import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import Navigation from '@libs/Navigation/Navigation';
@@ -45,6 +46,7 @@ function BaseOnboardingPersonalTrackGoal({shouldUseNativeStyles, route}: BaseOnb
     const [personalTrackGoal] = useOnyx(ONYXKEYS.ONBOARDING_PERSONAL_TRACK_GOAL);
     const autoCreateTrackWorkspace = useAutoCreateTrackWorkspace();
     const isPrivateDomainAndHasAccessiblePolicies = !account?.isFromPublicDomain && !!account?.hasAccessibleDomainPolicies;
+    const theme = useTheme();
 
     // Restore a previously made selection (e.g. after the user refreshes the next step and navigates back) from the persisted Onyx value.
     // Predefined goals are stored as their constant; "Something else" stores the free text the user typed.
@@ -93,9 +95,11 @@ function BaseOnboardingPersonalTrackGoal({shouldUseNativeStyles, route}: BaseOnb
                     Navigation.goBack(ROUTES.ONBOARDING_PURPOSE.getRoute(route.params?.backTo));
                 }}
                 shouldDisplayHelpButton={false}
+                title={translate('common.back')}
+                titleColor={theme.icon}
             />
             <ScrollView
-                style={[styles.flex1, styles.flexGrow1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, paddingHorizontal]}
+                style={[styles.flex1, styles.flexGrow1, paddingHorizontal]}
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.flex1}>

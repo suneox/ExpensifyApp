@@ -187,6 +187,8 @@ function BaseOnboardingWorkspaces({route, shouldUseNativeStyles}: BaseOnboarding
                 shouldShowBackButton={!shouldHideBackButton}
                 onBackButtonPress={() => Navigation.goBack()}
                 shouldDisplayHelpButton={false}
+                title={!shouldHideBackButton ? translate('common.back') : undefined}
+                titleColor={theme.icon}
             />
             <SelectionList
                 data={policyIDItems}
@@ -197,7 +199,7 @@ function BaseOnboardingWorkspaces({route, shouldUseNativeStyles}: BaseOnboarding
                 shouldStopPropagation
                 showScrollIndicator
                 customListHeader={
-                    <View style={[wrapperPadding, onboardingIsMediumOrLargerScreenWidth && styles.mt5, styles.mb5]}>
+                    <View style={[wrapperPadding, styles.mb5]}>
                         <Text
                             style={styles.textHeadlineH1}
                             accessibilityRole={CONST.ROLE.HEADER}

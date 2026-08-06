@@ -8,6 +8,7 @@ import useLocalize from '@hooks/useLocalize';
 import useOnyx from '@hooks/useOnyx';
 import usePermissions from '@hooks/usePermissions';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import {updateOnboardingValuesAndNavigation} from '@libs/actions/Welcome';
@@ -32,6 +33,7 @@ import type {BaseOnboardingPrivateDomainProps} from './types';
 function BaseOnboardingPrivateDomain({shouldUseNativeStyles, route}: BaseOnboardingPrivateDomainProps) {
     const [hasValidateCodeBeenSent, setHasValidateCodeBeenSent] = useState(false);
     const styles = useThemeStyles();
+    const theme = useTheme();
     const {translate} = useLocalize();
     const [loginList] = useOnyx(ONYXKEYS.LOGINS, {selector: expensifyLoginsSelector});
     const [session] = useOnyx(ONYXKEYS.SESSION);
@@ -138,13 +140,15 @@ function BaseOnboardingPrivateDomain({shouldUseNativeStyles, route}: BaseOnboard
                 shouldShowBackButton
                 onBackButtonPress={handleBackButtonPress}
                 shouldDisplayHelpButton={false}
+                title={translate('common.back')}
+                titleColor={theme.icon}
             />
             <ScrollView
                 style={[styles.w100, styles.h100, styles.flex1]}
                 contentContainerStyle={styles.flexGrow1}
                 keyboardShouldPersistTaps="handled"
             >
-                <View style={[styles.mb5, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5, styles.flex1]}>
+                <View style={[styles.mb5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5, styles.flex1]}>
                     <Text
                         style={styles.textHeadlineH1}
                         accessibilityRole={CONST.ROLE.HEADER}
