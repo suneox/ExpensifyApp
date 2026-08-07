@@ -10,11 +10,12 @@ import Section from '@components/Section';
 import Text from '@components/Text';
 
 import useCompleteOnboarding from '@hooks/useCompleteOnboarding';
-import {useMemoizedLazyIllustrations} from '@hooks/useLazyAsset';
+import {useMemoizedLazyExpensifyIcons, useMemoizedLazyIllustrations} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useNetwork from '@hooks/useNetwork';
 import useOnyx from '@hooks/useOnyx';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import {
@@ -29,6 +30,8 @@ import type {OnboardingFeatureMapItem} from '@libs/actions/Welcome/OnboardingFea
 import Navigation from '@libs/Navigation/Navigation';
 import {isGroupPolicy, isPolicyAdmin} from '@libs/PolicyUtils';
 
+import variables from '@styles/variables';
+
 import CONST from '@src/CONST';
 import type {TranslationPaths} from '@src/languages/types';
 import ONYXKEYS from '@src/ONYXKEYS';
@@ -42,6 +45,8 @@ import type {BaseOnboardingInterestedFeaturesProps, Feature, SectionObject} from
 function BaseOnboardingInterestedFeatures({shouldUseNativeStyles}: BaseOnboardingInterestedFeaturesProps) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
+    const theme = useTheme();
+    const icons = useMemoizedLazyExpensifyIcons(['BackArrow']);
     const illustrations = useMemoizedLazyIllustrations(['FolderOpen', 'Accounting', 'CompanyCard', 'Workflows', 'Rules', 'Car', 'Tag', 'PerDiem', 'HandCard', 'Luggage', 'Clock']);
 
     // We need to use isSmallScreenWidth, see navigateAfterOnboarding function comment
@@ -241,11 +246,20 @@ function BaseOnboardingInterestedFeatures({shouldUseNativeStyles}: BaseOnboardin
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
             shouldEnableMaxHeight
         >
-            <HeaderWithBackButton
-                onBackButtonPress={() => Navigation.goBack(ROUTES.ONBOARDING_EMPLOYEES.getRoute())}
-                shouldDisplayHelpButton={false}
-            />
-            <View style={[onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
+            <PressableWithoutFeedback
+                onPress={() => Navigation.goBack(ROUTES.ONBOARDING_EMPLOYEES.getRoute())}
+                style={[styles.flexRow, styles.alignItemsCenter, styles.pv3, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5, {gap: 14}]}
+                accessibilityLabel={translate('common.back')}
+            >
+                <Icon
+                    src={icons.BackArrow}
+                    fill={theme.icon}
+                    width={variables.iconSizeNormal}
+                    height={variables.iconSizeNormal}
+                />
+                <Text style={styles.createMenuHeaderText}>{translate('common.back')}</Text>
+            </PressableWithoutFeedback>
+            <View style={[styles.mt3, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
                 <Text
                     style={[styles.textHeadlineH1, styles.mb5]}
                     accessibilityRole={CONST.ROLE.HEADER}

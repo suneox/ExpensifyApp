@@ -1,3 +1,4 @@
+import BackLink from '@components/BackLink';
 import Button from '@components/ButtonComposed';
 import FixedFooter from '@components/FixedFooter';
 import FormHelpMessage from '@components/FormHelpMessage';
@@ -232,12 +233,11 @@ function BaseOnboardingAccounting({shouldUseNativeStyles}: BaseOnboardingAccount
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
             shouldEnableMaxHeight
         >
-            <HeaderWithBackButton
-                shouldShowBackButton
-                onBackButtonPress={() => Navigation.goBack(ROUTES.ONBOARDING_INTERESTED_FEATURES.getRoute())}
-                shouldDisplayHelpButton={false}
+            <BackLink
+                onPress={() => Navigation.goBack(ROUTES.ONBOARDING_INTERESTED_FEATURES.getRoute())}
+                style={onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5}
             />
-            <View style={[onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
+            <View style={[styles.mt3, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
                 <Text
                     style={[styles.textHeadlineH1, styles.mb5]}
                     accessibilityRole={CONST.ROLE.HEADER}

@@ -1,3 +1,4 @@
+import BackLink from '@components/BackLink';
 import Button from '@components/Button';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import ScreenWrapper from '@components/ScreenWrapper';
@@ -183,11 +184,12 @@ function BaseOnboardingWorkspaces({route, shouldUseNativeStyles}: BaseOnboarding
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
             shouldShowOfflineIndicator={isSmallScreenWidth}
         >
-            <HeaderWithBackButton
-                shouldShowBackButton={!shouldHideBackButton}
-                onBackButtonPress={() => Navigation.goBack()}
-                shouldDisplayHelpButton={false}
-            />
+            {!shouldHideBackButton && (
+                <BackLink
+                    onPress={() => Navigation.goBack()}
+                    style={onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5}
+                />
+            )}
             <SelectionList
                 data={policyIDItems}
                 onSelectRow={() => {}}

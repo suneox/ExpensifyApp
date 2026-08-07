@@ -1,3 +1,4 @@
+import BackLink from '@components/BackLink';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import OnboardingMergingAccountBlockedView from '@components/OnboardingMergingAccountBlockedView';
 import ScreenWrapper from '@components/ScreenWrapper';
@@ -86,13 +87,14 @@ function BaseOnboardingWorkEmailValidation({shouldUseNativeStyles}: BaseOnboardi
             testID="BaseOnboardingWorkEmailValidation"
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
         >
-            <HeaderWithBackButton
-                shouldShowBackButton={!onboardingValues?.isMergingAccountBlocked}
-                onBackButtonPress={() => {
-                    updateOnboardingValuesAndNavigation(onboardingValues);
-                }}
-                shouldDisplayHelpButton={false}
-            />
+            {!onboardingValues?.isMergingAccountBlocked && (
+                <BackLink
+                    onPress={() => {
+                        updateOnboardingValuesAndNavigation(onboardingValues);
+                    }}
+                    style={onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5}
+                />
+            )}
             {onboardingValues?.isMergingAccountBlocked ? (
                 <View style={[styles.flex1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}>
                     <OnboardingMergingAccountBlockedView

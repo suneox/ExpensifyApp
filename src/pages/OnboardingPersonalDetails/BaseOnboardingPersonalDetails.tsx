@@ -2,6 +2,8 @@ import FormProvider from '@components/Form/FormProvider';
 import InputWrapper from '@components/Form/InputWrapper';
 import type {FormOnyxValues} from '@components/Form/types';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
+import Icon from '@components/Icon';
+import {PressableWithoutFeedback} from '@components/Pressable';
 import ScreenWrapper from '@components/ScreenWrapper';
 import Text from '@components/Text';
 import TextInput from '@components/TextInput';
@@ -10,11 +12,13 @@ import withCurrentUserPersonalDetails from '@components/withCurrentUserPersonalD
 import useAutoCreateSubmitWorkspace from '@hooks/useAutoCreateSubmitWorkspace';
 import useAutoCreateTrackWorkspace from '@hooks/useAutoCreateTrackWorkspace';
 import useAutoFocusInput from '@hooks/useAutoFocusInput';
+import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useOnboardingMessages from '@hooks/useOnboardingMessages';
 import useOnyx from '@hooks/useOnyx';
 import usePermissions from '@hooks/usePermissions';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import {addErrorMessage} from '@libs/ErrorUtils';
@@ -25,6 +29,8 @@ import {isTrackOnboardingChoice} from '@libs/OnboardingUtils';
 import {hasURL} from '@libs/Url';
 import {expensifyLoginsSelector, isCurrentUserValidated} from '@libs/UserUtils';
 import {doesContainReservedWord, isValidDisplayName} from '@libs/ValidationUtils';
+
+import variables from '@styles/variables';
 
 import {clearPersonalDetailsDraft, setPersonalDetails} from '@userActions/Onboarding';
 import {setDisplayName, updateDisplayName} from '@userActions/PersonalDetails';
@@ -45,6 +51,8 @@ import type {BaseOnboardingPersonalDetailsProps} from './types';
 function BaseOnboardingPersonalDetails({currentUserPersonalDetails, shouldUseNativeStyles, route}: BaseOnboardingPersonalDetailsProps) {
     const styles = useThemeStyles();
     const {translate, formatPhoneNumber} = useLocalize();
+    const theme = useTheme();
+    const icons = useMemoizedLazyExpensifyIcons(['BackArrow']);
     const [onboardingPurposeSelected] = useOnyx(ONYXKEYS.ONBOARDING_PURPOSE_SELECTED);
     const [onboardingPolicyID] = useOnyx(ONYXKEYS.ONBOARDING_POLICY_ID);
     const [onboardingAdminsChatReportID] = useOnyx(ONYXKEYS.ONBOARDING_ADMINS_CHAT_REPORT_ID);
@@ -243,24 +251,34 @@ function BaseOnboardingPersonalDetails({currentUserPersonalDetails, shouldUseNat
             testID="BaseOnboardingPersonalDetails"
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
         >
-            <HeaderWithBackButton
-                shouldShowBackButton={!isPrivateDomainAndHasAccessiblePolicies}
-                onBackButtonPress={() => {
-                    // Based on the `handleSubmit` function to reverse where to return
-                    if (isPrivateDomainAndHasAccessiblePolicies) {
-                        Navigation.goBack();
-                        return;
-                    }
+            {!isPrivateDomainAndHasAccessiblePolicies && (
+                <PressableWithoutFeedback
+                    onPress={() => {
+                        // Based on the `handleSubmit` function to reverse where to return
+                        if (isPrivateDomainAndHasAccessiblePolicies) {
+                            Navigation.goBack();
+                            return;
+                        }
 
-                    if (onboardingPurposeSelected === CONST.ONBOARDING_CHOICES.TRACK_PERSONAL) {
-                        Navigation.goBack(ROUTES.ONBOARDING_PERSONAL_TRACK_GOAL.getRoute(route.params?.backTo));
-                        return;
-                    }
+                        if (onboardingPurposeSelected === CONST.ONBOARDING_CHOICES.TRACK_PERSONAL) {
+                            Navigation.goBack(ROUTES.ONBOARDING_PERSONAL_TRACK_GOAL.getRoute(route.params?.backTo));
+                            return;
+                        }
 
-                    Navigation.goBack(ROUTES.ONBOARDING_PURPOSE.getRoute(route.params?.backTo));
-                }}
-                shouldDisplayHelpButton={false}
-            />
+                        Navigation.goBack(ROUTES.ONBOARDING_PURPOSE.getRoute(route.params?.backTo));
+                    }}
+                    style={[styles.flexRow, styles.alignItemsCenter, styles.pv3, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5, {gap: 14}]}
+                    accessibilityLabel={translate('common.back')}
+                >
+                    <Icon
+                        src={icons.BackArrow}
+                        fill={theme.icon}
+                        width={variables.iconSizeNormal}
+                        height={variables.iconSizeNormal}
+                    />
+                    <Text style={styles.createMenuHeaderText}>{translate('common.back')}</Text>
+                </PressableWithoutFeedback>
+            )}
             <FormProvider
                 style={[styles.flexGrow1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
                 formID={ONYXKEYS.FORMS.ONBOARDING_PERSONAL_DETAILS_FORM}

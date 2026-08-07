@@ -1,17 +1,21 @@
 import Button from '@components/ButtonComposed';
 import FormHelpMessage from '@components/FormHelpMessage';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
+import Icon from '@components/Icon';
+import {PressableWithoutFeedback} from '@components/Pressable';
 import ScreenWrapper from '@components/ScreenWrapper';
 import SelectionList from '@components/SelectionList';
 import SingleSelectListItem from '@components/SelectionList/ListItem/SingleSelectListItem';
 import type {ListItem} from '@components/SelectionList/types';
 import Text from '@components/Text';
 
+import {useMemoizedLazyExpensifyIcons} from '@hooks/useLazyAsset';
 import useLocalize from '@hooks/useLocalize';
 import useOnboardingStepCounter from '@hooks/useOnboardingStepCounter';
 import useOnyx from '@hooks/useOnyx';
 import usePermissions from '@hooks/usePermissions';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
+import useTheme from '@hooks/useTheme';
 import useThemeStyles from '@hooks/useThemeStyles';
 
 import type {OnboardingCompanySize} from '@libs/actions/Welcome/OnboardingFlow';
@@ -19,6 +23,8 @@ import {getPreviousOnboardingRoute} from '@libs/getOnboardingStepCounter';
 import Navigation from '@libs/Navigation/Navigation';
 import {getVisibleJoinablePoliciesCount} from '@libs/OnboardingUtils';
 import {expensifyLoginsSelector, isCurrentUserValidated} from '@libs/UserUtils';
+
+import variables from '@styles/variables';
 
 import {setOnboardingCompanySize} from '@userActions/Welcome';
 
@@ -37,6 +43,8 @@ type OnboardingListItem = ListItem & {
 function BaseOnboardingEmployees({shouldUseNativeStyles, route}: BaseOnboardingEmployeesProps) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
+    const theme = useTheme();
+    const icons = useMemoizedLazyExpensifyIcons(['BackArrow']);
     const [onboardingCompanySize] = useOnyx(ONYXKEYS.ONBOARDING_COMPANY_SIZE);
 
     const {onboardingIsMediumOrLargerScreenWidth} = useResponsiveLayout();
@@ -151,13 +159,23 @@ function BaseOnboardingEmployees({shouldUseNativeStyles, route}: BaseOnboardingE
             testID="BaseOnboardingEmployees"
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
         >
-            <HeaderWithBackButton
-                shouldShowBackButton={!isEmployeesFirstStep}
-                onBackButtonPress={handleBackButtonPress}
-                shouldDisplayHelpButton={false}
-            />
+            {!isEmployeesFirstStep && (
+                <PressableWithoutFeedback
+                    onPress={handleBackButtonPress}
+                    style={[styles.flexRow, styles.alignItemsCenter, styles.pv3, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5, {gap: 14}]}
+                    accessibilityLabel={translate('common.back')}
+                >
+                    <Icon
+                        src={icons.BackArrow}
+                        fill={theme.icon}
+                        width={variables.iconSizeNormal}
+                        height={variables.iconSizeNormal}
+                    />
+                    <Text style={styles.createMenuHeaderText}>{translate('common.back')}</Text>
+                </PressableWithoutFeedback>
+            )}
             <Text
-                style={[styles.textHeadlineH1, styles.mb5, onboardingIsMediumOrLargerScreenWidth && styles.mt5, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
+                style={[styles.textHeadlineH1, styles.mb5, styles.mt3, onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5]}
                 accessibilityRole={CONST.ROLE.HEADER}
             >
                 {translate('onboarding.employees.title')}

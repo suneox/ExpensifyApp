@@ -1,3 +1,4 @@
+import BackLink from '@components/BackLink';
 import Button from '@components/ButtonComposed';
 import FormHelpMessage from '@components/FormHelpMessage';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
@@ -87,12 +88,11 @@ function BaseOnboardingPersonalTrackGoal({shouldUseNativeStyles, route}: BaseOnb
             testID="BaseOnboardingPersonalTrackGoal"
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
         >
-            <HeaderWithBackButton
-                shouldShowBackButton
-                onBackButtonPress={() => {
+            <BackLink
+                onPress={() => {
                     Navigation.goBack(ROUTES.ONBOARDING_PURPOSE.getRoute(route.params?.backTo));
                 }}
-                shouldDisplayHelpButton={false}
+                style={paddingHorizontal}
             />
             <ScrollView
                 style={[styles.flex1, styles.flexGrow1, onboardingIsMediumOrLargerScreenWidth && styles.mt5, paddingHorizontal]}

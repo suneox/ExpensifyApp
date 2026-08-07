@@ -1,3 +1,4 @@
+import BackLink from '@components/BackLink';
 import HeaderWithBackButton from '@components/HeaderWithBackButton';
 import ScreenWrapper from '@components/ScreenWrapper';
 import ScrollView from '@components/ScrollView';
@@ -134,10 +135,9 @@ function BaseOnboardingPrivateDomain({shouldUseNativeStyles, route}: BaseOnboard
             testID="BaseOnboardingPrivateDomain"
             style={[styles.defaultModalContainer, shouldUseNativeStyles && styles.pt8]}
         >
-            <HeaderWithBackButton
-                shouldShowBackButton
-                onBackButtonPress={handleBackButtonPress}
-                shouldDisplayHelpButton={false}
+            <BackLink
+                onPress={handleBackButtonPress}
+                style={onboardingIsMediumOrLargerScreenWidth ? styles.mh8 : styles.mh5}
             />
             <ScrollView
                 style={[styles.w100, styles.h100, styles.flex1]}
