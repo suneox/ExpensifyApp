@@ -88,7 +88,7 @@ describe('useRestartOnOdometerImagesFailure', () => {
         await Onyx.merge(`${ONYXKEYS.COLLECTION.TRANSACTION_DRAFT}${TRANSACTION_ID}`, transaction);
         await waitForBatchedUpdates();
 
-        const {result} = renderHook(() => useRestartOnOdometerImagesFailure(transaction, REPORT_ID, CONST.IOU.TYPE.SUBMIT, undefined, onBackupHandled));
+        const {result} = renderHook(() => useRestartOnOdometerImagesFailure(transaction, REPORT_ID, CONST.IOU.TYPE.SUBMIT, CONST.IOU.ACTION.CREATE, undefined, onBackupHandled));
         await waitForBatchedUpdates();
 
         expect(result.current.hasVerifiedBlobs).toBe(true);
@@ -106,7 +106,7 @@ describe('useRestartOnOdometerImagesFailure', () => {
         await Onyx.merge(`${ONYXKEYS.COLLECTION.TRANSACTION_DRAFT}${TRANSACTION_ID}`, transaction);
         await waitForBatchedUpdates();
 
-        renderHook(() => useRestartOnOdometerImagesFailure(transaction, REPORT_ID, CONST.IOU.TYPE.SUBMIT, undefined, onBackupHandled));
+        renderHook(() => useRestartOnOdometerImagesFailure(transaction, REPORT_ID, CONST.IOU.TYPE.SUBMIT, CONST.IOU.ACTION.CREATE, undefined, onBackupHandled));
         await waitForBatchedUpdates();
 
         expect(onBackupHandled).toHaveBeenCalledWith({shouldResetLocalState: true});
@@ -124,7 +124,7 @@ describe('useRestartOnOdometerImagesFailure', () => {
         await Onyx.merge(`${ONYXKEYS.COLLECTION.TRANSACTION_DRAFT}${TRANSACTION_ID}`, transaction);
         await waitForBatchedUpdates();
 
-        const {result} = renderHook(() => useRestartOnOdometerImagesFailure(transaction, REPORT_ID, CONST.IOU.TYPE.SUBMIT, undefined, jest.fn()));
+        const {result} = renderHook(() => useRestartOnOdometerImagesFailure(transaction, REPORT_ID, CONST.IOU.TYPE.SUBMIT, CONST.IOU.ACTION.CREATE, undefined, jest.fn()));
         await waitForBatchedUpdates();
 
         expect(result.current.hasVerifiedBlobs).toBe(true);

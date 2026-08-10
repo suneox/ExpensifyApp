@@ -175,7 +175,7 @@ function IOURequestStepDistanceOdometer({
     // returns) can call the latest reset function.
     const resetOdometerLocalStateRef = useRef<() => void>(() => {});
 
-    const {hasVerifiedBlobs} = useRestartOnOdometerImagesFailure(transaction, reportID, iouType, backToReport, ({shouldResetLocalState}) => {
+    const {hasVerifiedBlobs} = useRestartOnOdometerImagesFailure(transaction, reportID, iouType, action, backToReport, ({shouldResetLocalState}) => {
         if (shouldResetLocalState) {
             resetOdometerLocalStateRef.current();
         }

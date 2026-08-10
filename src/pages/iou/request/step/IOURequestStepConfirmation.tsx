@@ -553,6 +553,7 @@ function IOURequestStepConfirmation({
         isOdometerDistanceRequest,
         reportID,
         iouType,
+        action,
         backToReport,
     });
 

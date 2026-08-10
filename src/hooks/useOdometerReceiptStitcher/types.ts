@@ -1,4 +1,4 @@
-import type {IOUType} from '@src/CONST';
+import type {IOUAction, IOUType} from '@src/CONST';
 import type {Transaction} from '@src/types/onyx';
 
 import type {OnyxEntry} from 'react-native-onyx';
@@ -29,6 +29,9 @@ type UseOdometerReceiptStitcherArgs = {
 
     /** Used for the invalidated-recovery navigation target. */
     iouType: IOUType;
+
+    /** Used for the invalidated-recovery navigation target. Only the create flow can restart into the wizard. */
+    action: IOUAction;
 
     /** Used for the invalidated-recovery navigation target. */
     backToReport: string | undefined;

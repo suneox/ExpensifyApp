@@ -3,9 +3,10 @@ import useOnyx from '@hooks/useOnyx';
 import {checkIfLocalFileIsAccessible} from '@libs/actions/IOU/Receipt';
 import clearOdometerDraftTransactionState, {hydrateOdometerDraftIntoTransaction} from '@libs/actions/OdometerTransactionUtils';
 import {navigateToStartMoneyRequestStep} from '@libs/IOUUtils';
+import Navigation from '@libs/Navigation/Navigation';
 import {getOdometerImageUri} from '@libs/OdometerUtils';
 
-import type {IOUType} from '@src/CONST';
+import type {IOUAction, IOUType} from '@src/CONST';
 import CONST from '@src/CONST';
 import ONYXKEYS from '@src/ONYXKEYS';
 import {validTransactionDraftIDsSelector} from '@src/selectors/TransactionDraft';
@@ -24,6 +25,7 @@ const useRestartOnOdometerImagesFailure = (
     transaction: OnyxEntry<Transaction>,
     reportID: string,
     iouType: IOUType,
+    action: IOUAction,
     backToReport: string | undefined,
     onBackupHandled?: (args: BackupHandledArgs) => void,
 ): {hasVerifiedBlobs: boolean} => {
@@ -90,6 +92,19 @@ const useRestartOnOdometerImagesFailure = (
                     }),
             ),
         ).then((results) => {
+            // Restarting means re-entering the distance create wizard, which resolves its transaction from the
+            // TRANSACTION_DRAFT collection. In the edit flow `transaction.transactionID` is a real (non-draft)
+            // transaction, so the wizard would render Not Found. There is nothing to restart when editing an
+            // existing expense — leave the step instead and let the user reopen it with fresh images.
+            const restartFlowOrLeave = () => {
+                if (action !== CONST.IOU.ACTION.CREATE) {
+                    Navigation.goBack();
+                    return;
+                }
+
+                navigateToStartMoneyRequestStep(CONST.IOU.REQUEST_TYPE.DISTANCE_ODOMETER, iouType, transaction.transactionID, reportID, CONST.IOU.ACTION.CREATE, backToReport);
+            };
+
             const canBeRead = results.every(Boolean);
             if (canBeRead) {
                 setAsyncVerificationPassed(true);
@@ -113,7 +128,7 @@ const useRestartOnOdometerImagesFailure = (
                 onBackupHandled?.({shouldResetLocalState: false});
                 hydrateOdometerDraftIntoTransaction(transaction.transactionID, odometerDraft, transaction.comment).then(() => {
                     setAsyncVerificationPassed(true);
-                    navigateToStartMoneyRequestStep(CONST.IOU.REQUEST_TYPE.DISTANCE_ODOMETER, iouType, transaction.transactionID, reportID, CONST.IOU.ACTION.CREATE, backToReport);
+                    restartFlowOrLeave();
                 });
                 return;
             }
@@ -121,9 +136,9 @@ const useRestartOnOdometerImagesFailure = (
             onBackupHandled?.({shouldResetLocalState: true});
             clearOdometerDraftTransactionState(transaction);
 
-            navigateToStartMoneyRequestStep(CONST.IOU.REQUEST_TYPE.DISTANCE_ODOMETER, iouType, transaction.transactionID, reportID, CONST.IOU.ACTION.CREATE, backToReport);
+            restartFlowOrLeave();
         });
-    }, [draftTransactionsMetadata, transaction, iouType, reportID, backToReport, onBackupHandled, odometerDraft, odometerDraftStatus]);
+    }, [draftTransactionsMetadata, transaction, iouType, action, reportID, backToReport, onBackupHandled, odometerDraft, odometerDraftStatus]);
 
     const isOnyxLoading = isLoadingOnyxValue(draftTransactionsMetadata, odometerDraftStatus);
     const hasVerifiedBlobs = !!transaction && !isOnyxLoading && (!hasBlobUrls || asyncVerificationPassed);

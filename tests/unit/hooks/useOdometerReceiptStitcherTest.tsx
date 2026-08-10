@@ -116,6 +116,7 @@ function buildArgs(overrides: Partial<UseOdometerReceiptStitcherArgs> = {}): Use
         isOdometerDistanceRequest: true,
         reportID: REPORT_ID,
         iouType: IOU_TYPE,
+        action: CONST.IOU.ACTION.CREATE,
         backToReport: undefined,
         ...overrides,
     };
@@ -376,8 +377,8 @@ describe('useOdometerReceiptStitcher (web FSM, composes verifier)', () => {
             const onBackupHandled = jest.fn();
             renderHook(() => useOdometerReceiptStitcher(buildArgs({onBackupHandled})));
             const args = mockUseRestartOnOdometerImagesFailure.mock.calls.at(0);
-            // 5th positional argument is the callback.
-            expect(args?.at(4)).toBe(onBackupHandled);
+            // 6th positional argument is the callback (transaction, reportID, iouType, action, backToReport, onBackupHandled).
+            expect(args?.at(5)).toBe(onBackupHandled);
         });
 
         it('forwards hasVerifiedBlobs verbatim from the verifier to consumers', () => {

@@ -46,11 +46,12 @@ function useOdometerReceiptStitcher({
     isOdometerDistanceRequest,
     reportID,
     iouType,
+    action,
     backToReport,
     onBackupHandled,
 }: UseOdometerReceiptStitcherArgs): UseOdometerReceiptStitcherResult {
     // Pass undefined when the flow isn't odometer so the verifier bails per its contract.
-    const {hasVerifiedBlobs} = useRestartOnOdometerImagesFailure(isOdometerDistanceRequest ? transaction : undefined, reportID, iouType, backToReport, onBackupHandled);
+    const {hasVerifiedBlobs} = useRestartOnOdometerImagesFailure(isOdometerDistanceRequest ? transaction : undefined, reportID, iouType, action, backToReport, onBackupHandled);
 
     const [state, dispatch] = useReducer(reducer, {kind: 'idle'} as OdometerReceiptState);
     const isFocused = useIsFocused();
