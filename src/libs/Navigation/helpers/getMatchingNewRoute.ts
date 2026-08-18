@@ -2,6 +2,8 @@ import StringUtils from '@libs/StringUtils';
 
 import oldRoutes from '@navigation/linkingConfig/OldRoutes';
 
+import {DYNAMIC_ROUTES} from '@src/ROUTES';
+
 /**
  * Converts an OldRoutes pattern string into a RegExp.
  *
@@ -29,6 +31,44 @@ function patternToRegex(pattern: string): RegExp {
     return new RegExp(regexStr);
 }
 
+/** Legacy hold reason path: `:policyType/edit/reason/:transactionID/:searchHash?` (the trailing slash is optional). */
+const LEGACY_HOLD_REASON_PATTERN = /^\/[^/]+\/edit\/reason\/([^/]+)(?:\/\d+)?\/?$/;
+
+/**
+ * Rebuilds a legacy hold reason link as the `hold-reason` dynamic route.
+ *
+ * This one cannot live in `oldRoutes`: a replacement template can only reference path segments, but the legacy
+ * link keeps both the screen it was opened from (`backTo`) and the `reportID` in the query. The decoded `backTo`
+ * is the base path the dynamic suffix is appended to; without it we fall back to the report the hold belongs to.
+ *
+ * @private - Internal helper. Do not export or use outside this file.
+ */
+function getLegacyHoldReasonRoute(pathOnly: string, query: string | undefined): string | undefined {
+    const transactionID = pathOnly.match(LEGACY_HOLD_REASON_PATTERN)?.[1];
+
+    if (!transactionID) {
+        return undefined;
+    }
+
+    const legacyParams = new URLSearchParams(query);
+    const reportID = legacyParams.get('reportID') ?? undefined;
+    const backTo = legacyParams.get('backTo');
+    const base = backTo?.length ? backTo : reportID && `/r/${reportID}`;
+
+    if (!base) {
+        return undefined;
+    }
+
+    const [basePath, baseQuery] = base.split('?');
+    const params = new URLSearchParams(baseQuery);
+    params.set('transactionID', transactionID);
+    if (reportID) {
+        params.set('reportID', reportID);
+    }
+
+    return `${basePath.replace(/\/$/, '')}/${DYNAMIC_ROUTES.MONEY_REQUEST_HOLD_REASON.path}?${params.toString()}`;
+}
+
 /**
  * Maps an old route path to its corresponding new route based on the `oldRoutes` map.
  * It finds the best matching pattern (with wildcard `*` support) and replaces the matched
@@ -50,6 +90,12 @@ function getMatchingNewRoute(path: string) {
     // the query and the redirect's own params land inside it. Match on the path only and
     // re-append the original query, merging it with any query the redirect template adds.
     const [pathOnly, query] = path.split('?');
+
+    const legacyHoldReasonRoute = getLegacyHoldReasonRoute(pathOnly, query);
+    if (legacyHoldReasonRoute) {
+        return legacyHoldReasonRoute;
+    }
+
     let bestMatch: string | undefined;
     let bestRegex: RegExp | undefined;
     let maxLength = -1;

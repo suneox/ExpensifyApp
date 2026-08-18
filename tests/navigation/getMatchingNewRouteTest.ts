@@ -548,4 +548,27 @@ describe('getBestMatchingPath', () => {
         expect(getMatchingNewRoute('/r/456/expense-distance-manual?action=edit&iouType=submit&transactionID=123&reportID=456')).toBe(undefined);
         expect(getMatchingNewRoute('/r/456/expense-distance-rate?action=edit&iouType=submit&transactionID=123&reportID=456')).toBe(undefined);
     });
+    it('rebuilds the legacy hold reason link on top of the screen it was opened from (#83853)', () => {
+        expect(getMatchingNewRoute('/corporate/edit/reason/123?backTo=%2Fe%2F456&reportID=789')).toBe('/e/456/hold-reason?transactionID=123&reportID=789');
+        expect(getMatchingNewRoute('/personal/edit/reason/123/?backTo=%2Fr%2F456&reportID=789')).toBe('/r/456/hold-reason?transactionID=123&reportID=789');
+        expect(getMatchingNewRoute('/team/edit/reason/123/?backTo=%2Fsearch%2Fview%2F456&reportID=789')).toBe('/search/view/456/hold-reason?transactionID=123&reportID=789');
+    });
+
+    it('keeps the query the legacy backTo target carried itself (#83853)', () => {
+        expect(getMatchingNewRoute('/corporate/edit/reason/123/?backTo=%2Fe%2F456%3FbackTo%3D%252Fr%252F789&reportID=321')).toBe(
+            '/e/456/hold-reason?backTo=%2Fr%2F789&transactionID=123&reportID=321',
+        );
+    });
+
+    it('drops the legacy searchHash segment and falls back to the report when backTo is missing (#83853)', () => {
+        expect(getMatchingNewRoute('/corporate/edit/reason/123/9876543?reportID=789')).toBe('/r/789/hold-reason?transactionID=123&reportID=789');
+    });
+
+    it('leaves the legacy hold reason link alone when neither backTo nor reportID is present (#83853)', () => {
+        expect(getMatchingNewRoute('/corporate/edit/reason/123')).toBe(undefined);
+    });
+
+    it('does not redirect the already-migrated hold reason dynamic route (#83853)', () => {
+        expect(getMatchingNewRoute('/r/456/hold-reason?transactionID=123&reportID=789')).toBe(undefined);
+    });
 });
