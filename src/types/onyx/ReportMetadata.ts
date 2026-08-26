@@ -34,6 +34,22 @@ type ReportMetadata = {
 
     /** Transaction IDs that were just submitted/moved to this report and should be highlighted on first load */
     pendingNewTransactionIDs?: Record<string, true | null>;
+
+    /**
+     * An export to an accounting integration that this client started and that has no outcome on the report yet.
+     *
+     * `Report_Export` answers 200 as soon as the request is accepted and carries no `onyxData`, so there is no client
+     * event meaning "the export finished" — the real outcome arrives later over Pusher. This marker is therefore
+     * resolved at read time by comparing the report's own outcome fields against the snapshot taken when the export
+     * started, rather than being cleared from a listener, so a stale marker can never strand the button.
+     */
+    pendingExport?: {
+        /** `reportActionID` of the optimistic export action this attempt created */
+        reportActionID: string;
+
+        /** How many `errorFields.export` entries the report carried when this attempt started */
+        errorCount: number;
+    };
 };
 
 export default ReportMetadata;

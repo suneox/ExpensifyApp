@@ -22,6 +22,7 @@ import {
     getParentReport,
     getReportTransactions,
     hasExportError as hasExportErrorUtil,
+    isExportInProgress as isExportInProgressUtil,
     hasOnlyNonReimbursableTransactions,
     isClosedReport,
     isCurrentUserSubmitter,
@@ -184,7 +185,12 @@ function canPay(
     return invoiceReceiverPolicy?.role === CONST.POLICY.ROLE.ADMIN && reimbursableSpend > 0;
 }
 
-function canExport(report: Report, currentUserLogin: string, policy?: Policy) {
+function canExport(report: Report, currentUserLogin: string, policy?: Policy, reportMetadata?: OnyxEntry<ReportMetadata>) {
+    // Hide the export action while an export started from this client is still running.
+    if (isExportInProgressUtil(report, reportMetadata)) {
+        return false;
+    }
+
     const isExpense = isExpenseReport(report);
     const isExporter = policy ? isPreferredExporter(policy, currentUserLogin) : false;
     const isReimbursed = isSettled(report);
@@ -277,7 +283,7 @@ function getReportPreviewAction({
     if (canPay(report, isReportArchived, currentUserAccountID, currentUserLogin, bankAccountList, transactions, policy, invoiceReceiverPolicy)) {
         return CONST.REPORT.REPORT_PREVIEW_ACTIONS.PAY;
     }
-    if (canExport(report, currentUserLogin, policy)) {
+    if (canExport(report, currentUserLogin, policy, reportMetadata)) {
         return CONST.REPORT.REPORT_PREVIEW_ACTIONS.EXPORT_TO_ACCOUNTING;
     }
 

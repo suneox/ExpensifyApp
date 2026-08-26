@@ -13363,6 +13363,33 @@ function hasExportError(reportActions: OnyxEntry<ReportActions> | ReportAction[]
     return Object.values(reportActions).some((action) => isIntegrationMessageAction(action) && !getOriginalMessage(action)?.result?.reconciled);
 }
 
+/**
+ * Whether an export to an accounting integration started by this client is still running.
+ *
+ * `Report_Export` answers 200 as soon as the request is accepted and returns no `onyxData`, and `failureData` only runs
+ * when the request itself is rejected, so there is no client event meaning "the export finished". The marker written by
+ * `exportToIntegration` is therefore resolved here, at read time, against the report's own outcome fields:
+ *
+ * - the server marks the report exported, or
+ * - the server records a new `errorFields.export` entry for this attempt.
+ *
+ * Resolving by comparison rather than clearing from a listener means a stale marker can never strand the button, and
+ * because both signals live on the report this also holds in a preview where the report actions are not loaded yet.
+ */
+function isExportInProgress(report: OnyxEntry<Report>, reportMetadata: OnyxEntry<ReportMetadata>): boolean {
+    const pendingExport = reportMetadata?.pendingExport;
+    if (!pendingExport) {
+        return false;
+    }
+
+    if (report?.isExportedToIntegration) {
+        return false;
+    }
+
+    const exportErrorCount = Object.keys(report?.errorFields?.export ?? {}).length;
+    return exportErrorCount <= pendingExport.errorCount;
+}
+
 function doesReportContainRequestsFromMultipleUsers(iouReport: OnyxEntry<Report>, shouldExcludeDeletedTransactions = false): boolean {
     const transactions = getReportTransactions(iouReport?.reportID).filter(
         (transaction) => !shouldExcludeDeletedTransactions || transaction.pendingAction !== CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE,
@@ -14555,6 +14582,7 @@ export {
     canBeExported,
     isExported,
     hasExportError,
+    isExportInProgress,
     hasOnlyNonReimbursableTransactions,
     getReportLastMessage,
     getReportLastVisibleActionCreated,
