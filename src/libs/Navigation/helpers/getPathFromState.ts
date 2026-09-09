@@ -6,6 +6,7 @@ import type {Screen} from '@src/SCREENS';
 
 import {getPathFromState as RNGetPathFromState} from '@react-navigation/native';
 
+import collapseRepeatedSlashes from './collapseRepeatedSlashes';
 import getDynamicRouteQueryParams from './dynamicRoutesUtils/getDynamicRouteQueryParams';
 import isDynamicRouteScreen from './dynamicRoutesUtils/isDynamicRouteScreen';
 import splitPathAndQuery from './dynamicRoutesUtils/splitPathAndQuery';
@@ -171,7 +172,7 @@ function getPathFromStateWithDynamicRoute(state: State): string {
     // so the browser never parses a segment as a host and `history.pushState` can't throw a SecurityError.
     // React Navigation's own `getPathFromState` already normalizes slashes, so the standard-screen branch
     // doesn't need this.
-    const normalizedPath = `/${combinedPath}`.replaceAll(/\/{2,}/g, '/');
+    const normalizedPath = collapseRepeatedSlashes(`/${combinedPath}`);
     if (normalizedPath !== combinedPath) {
         // Log `screenName` only - the path can carry sensitive query params that shouldn't be shared.
         Log.alert('[Navigation] getPathFromStateWithDynamicRoute produced a malformed path', {screenName});

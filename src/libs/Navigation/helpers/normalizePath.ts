@@ -1,5 +1,7 @@
 import Log from '@libs/Log';
 
+import collapseRepeatedSlashes from './collapseRepeatedSlashes';
+
 /**
  * Returns the origin of the document that linked here, or undefined when there is none.
  * Web-only: on native there is no referrer, and an opaque referrer is not a valid URL.
@@ -38,7 +40,7 @@ function normalizePath(path: string) {
         Log.alert('[Navigation] normalizePath received a malformed path', {path: pathOnly, referrerOrigin: getReferrerOrigin()});
     }
 
-    const collapsedPath = pathOnly.replaceAll(/\/{2,}/g, '/');
+    const collapsedPath = collapseRepeatedSlashes(pathOnly);
 
     return `${collapsedPath.startsWith('/') ? collapsedPath : `/${collapsedPath}`}${query}`;
 }
