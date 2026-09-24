@@ -92,5 +92,36 @@ describe('MultifactorAuthentication shared helpers', () => {
             expect(result.httpStatusCode).toBe(401);
             expect(result.reason).toBe(VALUES.REASON.CLIENT_ERRORS.REGISTRATION_REQUIRED);
         });
+
+        // Given the verbatim response Auth returns when a user submits a wrong validate code
+        // When the registration challenge response is parsed
+        // Then the reason must be the continuable INVALID_VALIDATE_CODE, so the user stays on the validate code screen
+        it('should classify the backend invalid validate code message as continuable', () => {
+            const responseMap = VALUES.API_RESPONSE_MAP.REQUEST_AUTHENTICATION_CHALLENGE;
+            const result = parseHttpResponse(401, responseMap, '401 Not authorized - Invalid validateCode');
+
+            expect(result.httpStatusCode).toBe(401);
+            expect(result.reason).toBe(VALUES.REASON.CLIENT_ERRORS.INVALID_VALIDATE_CODE);
+        });
+
+        // Given the same message on the key registration endpoint, which reuses the shared message constant
+        // When the response is parsed against that endpoint's map
+        // Then it must resolve to the same continuable reason, so every validate code entry point recovers alike
+        it('should classify the backend invalid validate code message as continuable for RegisterAuthenticationKey', () => {
+            const responseMap = VALUES.API_RESPONSE_MAP.REGISTER_AUTHENTICATION_KEY;
+            const result = parseHttpResponse(401, responseMap, '401 Not authorized - Invalid validateCode');
+
+            expect(result.reason).toBe(VALUES.REASON.CLIENT_ERRORS.INVALID_VALIDATE_CODE);
+        });
+
+        // Given a 4xx whose message is not the invalid validate code one
+        // When it is parsed
+        // Then it must stay UNRECOGNIZED, which is a fatal, anomalous reason we want reported rather than masked as a wrong code
+        it('should not treat an unrelated 4xx as an invalid validate code', () => {
+            const responseMap = VALUES.API_RESPONSE_MAP.REQUEST_AUTHENTICATION_CHALLENGE;
+            const result = parseHttpResponse(401, responseMap, '401 Not authorized - Too many attempts');
+
+            expect(result.reason).toBe(VALUES.REASON.CLIENT_ERRORS.UNRECOGNIZED);
+        });
     });
 });
