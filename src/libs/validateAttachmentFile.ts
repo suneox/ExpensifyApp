@@ -3,7 +3,17 @@ import type {FileObject} from '@src/types/utils/Attachment';
 
 import type {ValueOf} from 'type-fest';
 
-import {appendExtensionFromMimeType, cleanFileName, hasHeicOrHeifExtension, isValidReceiptExtension, normalizeFileObject, validateImageForCorruption} from './fileDownload/FileUtils';
+import {
+    appendExtensionFromMimeType,
+    cleanFileName,
+    getExtensionFromMimeType,
+    hasHeicOrHeifExtension,
+    isValidReceiptExtension,
+    normalizeFileObject,
+    sniffMimeTypeFromBytes,
+    splitExtensionFromFileName,
+    validateImageForCorruption,
+} from './fileDownload/FileUtils';
 import snapshotPickedFile from './snapshotPickedFile';
 
 type ValidateAttachmentValidResult = {
@@ -67,8 +77,14 @@ async function validateAttachmentFile(file: FileObject, item?: DataTransferItem,
      * drop, copy-paste, share). An attachment stored without an extension downloads as a file the OS
      * treats as a generic document, even when the bytes are a perfectly valid video or image.
      * Receipts are unaffected: `isValidReceiptExtension` already rejected names with no extension above.
+     * On web, an extension-less upload reports no usable `File.type` (empty, or the meaningless
+     * `application/octet-stream` catch-all), so the type is recovered from the file's byte signature instead.
      */
-    const fileNameWithExtension = appendExtensionFromMimeType(normalizedFile.name ?? '', normalizedFile.type);
+    let effectiveMimeType = normalizedFile.type;
+    if (normalizedFile.name && !splitExtensionFromFileName(normalizedFile.name).fileExtension && !getExtensionFromMimeType(effectiveMimeType) && normalizedFile instanceof File) {
+        effectiveMimeType = (await sniffMimeTypeFromBytes(normalizedFile)) ?? effectiveMimeType;
+    }
+    const fileNameWithExtension = appendExtensionFromMimeType(normalizedFile.name ?? '', effectiveMimeType);
 
     if (normalizedFile instanceof File) {
         /**

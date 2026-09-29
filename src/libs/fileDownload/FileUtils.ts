@@ -179,13 +179,46 @@ function getFileNameWithFallback(fileName: string | null | undefined, uri: strin
 
 /**
  * Returns the most common file extension registered for a MIME type, e.g. `video/mp4` -> `mp4`.
- * Returns undefined for an empty or unrecognized MIME type so callers can pick their own fallback.
+ * Returns undefined for an empty, unrecognized, or meaningless MIME type so callers can pick their own fallback.
+ * `application/octet-stream` is treated as unknown: browsers report it for files whose extension is missing,
+ * and its first mime-db extension (`bin`) is a catch-all that renames the file without making it any more openable.
  */
 function getExtensionFromMimeType(mimeType: string | undefined): string | undefined {
-    if (!mimeType) {
+    if (!mimeType || mimeType === 'application/octet-stream') {
         return undefined;
     }
     return mimeDb[mimeType]?.extensions?.at(0);
+}
+
+/**
+ * Byte-signature sniffers used to recover a MIME type for web uploads whose extension (and therefore
+ * browser-reported `File.type`) is empty or a meaningless catch-all. Order matters: more specific
+ * signatures first. Returns undefined when no signature matches.
+ */
+const MAGIC_BYTE_SNIFFERS: Array<{match: (bytes: Uint8Array) => boolean; mimeType: string}> = [
+    {match: (b) => b.length >= 12 && b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70 && b[8] === 0x71 && b[9] === 0x74, mimeType: 'video/quicktime'},
+    {match: (b) => b.length >= 8 && b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70, mimeType: 'video/mp4'},
+    {match: (b) => b.length >= 4 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47, mimeType: 'image/png'},
+    {match: (b) => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff, mimeType: 'image/jpeg'},
+    {match: (b) => b.length >= 4 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38, mimeType: 'image/gif'},
+    {match: (b) => b.length >= 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46, mimeType: 'application/pdf'},
+];
+
+/**
+ * Reads the first bytes of a web `File` and derives a MIME type from its signature.
+ * Only meaningful on web, where an extension-less upload carries no usable `File.type`;
+ * native pickers always report the real MIME type. Returns undefined when the bytes match nothing known.
+ */
+async function sniffMimeTypeFromBytes(file: File): Promise<string | undefined> {
+    const head = file.slice(0, 16);
+    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as ArrayBuffer);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(head);
+    });
+    const bytes = new Uint8Array(buffer);
+    return MAGIC_BYTE_SNIFFERS.find((sniffer) => sniffer.match(bytes))?.mimeType;
 }
 
 /**
@@ -993,6 +1026,7 @@ export {
     getMimeType,
     getExtensionFromMimeType,
     appendExtensionFromMimeType,
+    sniffMimeTypeFromBytes,
     getFileName,
     getFileNameWithFallback,
     getFileType,
