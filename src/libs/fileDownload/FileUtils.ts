@@ -206,8 +206,9 @@ const MAGIC_BYTE_SNIFFERS: Array<{match: (bytes: Uint8Array) => boolean; mimeTyp
 
 /**
  * Reads the first bytes of a web `File` and derives a MIME type from its signature.
- * Only meaningful on web, where an extension-less upload carries no usable `File.type`;
- * native pickers always report the real MIME type. Returns undefined when the bytes match nothing known.
+ * Only meaningful where an extension-less upload carries no usable MIME type: on web the browser
+ * derives `File.type` from the extension, and native document pickers can report an empty or
+ * catch-all type for files stored without one. Returns undefined when the bytes match nothing known.
  */
 async function sniffMimeTypeFromBytes(file: File): Promise<string | undefined> {
     const head = file.slice(0, 16);
@@ -219,6 +220,55 @@ async function sniffMimeTypeFromBytes(file: File): Promise<string | undefined> {
     });
     const bytes = new Uint8Array(buffer);
     return MAGIC_BYTE_SNIFFERS.find((sniffer) => sniffer.match(bytes))?.mimeType;
+}
+
+/**
+ * Decodes a short base64 string into bytes without pulling in a dependency.
+ * Only used for the 16-byte file signatures read by the native sniffer below.
+ */
+function decodeBase64ToBytes(encoded: string): Uint8Array {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    const clean = encoded.replace(/[^A-Za-z0-9+/]/g, '');
+    const bytes = new Uint8Array(Math.floor((clean.length * 3) / 4));
+    let byteIndex = 0;
+    for (let i = 0; i + 3 < clean.length + 1; i += 4) {
+        const c1 = alphabet.indexOf(clean[i]);
+        const c2 = alphabet.indexOf(clean[i + 1]);
+        const c3 = alphabet.indexOf(clean[i + 2]);
+        const c4 = alphabet.indexOf(clean[i + 3]);
+        if (c1 < 0 || c2 < 0) {
+            break;
+        }
+        bytes[byteIndex++] = (c1 << 2) | (c2 >> 4);
+        if (c3 >= 0) {
+            bytes[byteIndex++] = (c2 << 4) | (c3 >> 2);
+        }
+        if (c4 >= 0) {
+            bytes[byteIndex++] = (c3 << 6) | c4;
+        }
+    }
+    return bytes.subarray(0, byteIndex);
+}
+
+/**
+ * Native counterpart of `sniffMimeTypeFromBytes`: reads the first bytes of a local file URI
+ * (the `FileObject.uri` native pickers hand us) and derives a MIME type from its signature.
+ * Returns undefined when the bytes match nothing known or the file cannot be read.
+ */
+async function sniffMimeTypeFromUri(uri: string | undefined): Promise<string | undefined> {
+    if (!uri) {
+        return undefined;
+    }
+    try {
+        // blob-util wants a bare path: iOS rejects a `file://` URI here, and Android accepts both
+        // bare paths and its `content://` URIs, so only the `file://` scheme is stripped.
+        const base64Head = await ReactNativeBlobUtil.fs.slice(fileURIToPath(uri), 0, 16, 'base64');
+        const bytes = decodeBase64ToBytes(base64Head);
+        return MAGIC_BYTE_SNIFFERS.find((sniffer) => sniffer.match(bytes))?.mimeType;
+    } catch {
+        // An unreadable or remote URI must never block validation — treat as unknown.
+        return undefined;
+    }
 }
 
 /**
@@ -1027,6 +1077,7 @@ export {
     getExtensionFromMimeType,
     appendExtensionFromMimeType,
     sniffMimeTypeFromBytes,
+    sniffMimeTypeFromUri,
     getFileName,
     getFileNameWithFallback,
     getFileType,

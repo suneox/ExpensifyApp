@@ -11,6 +11,7 @@ import {
     isValidReceiptExtension,
     normalizeFileObject,
     sniffMimeTypeFromBytes,
+    sniffMimeTypeFromUri,
     splitExtensionFromFileName,
     validateImageForCorruption,
 } from './fileDownload/FileUtils';
@@ -77,12 +78,16 @@ async function validateAttachmentFile(file: FileObject, item?: DataTransferItem,
      * drop, copy-paste, share). An attachment stored without an extension downloads as a file the OS
      * treats as a generic document, even when the bytes are a perfectly valid video or image.
      * Receipts are unaffected: `isValidReceiptExtension` already rejected names with no extension above.
-     * On web, an extension-less upload reports no usable `File.type` (empty, or the meaningless
-     * `application/octet-stream` catch-all), so the type is recovered from the file's byte signature instead.
+     * An extension-less upload can carry an unusable MIME type on any platform — on web the browser
+     * derives `File.type` from the extension (empty or the meaningless `application/octet-stream`
+     * catch-all), and native document pickers can report nothing usable for files stored without one —
+     * so the type is recovered from the file's byte signature instead: via the web File's own bytes,
+     * or via the local URI native pickers hand us.
      */
     let effectiveMimeType = normalizedFile.type;
-    if (normalizedFile.name && !splitExtensionFromFileName(normalizedFile.name).fileExtension && !getExtensionFromMimeType(effectiveMimeType) && normalizedFile instanceof File) {
-        effectiveMimeType = (await sniffMimeTypeFromBytes(normalizedFile)) ?? effectiveMimeType;
+    if (normalizedFile.name && !splitExtensionFromFileName(normalizedFile.name).fileExtension && !getExtensionFromMimeType(effectiveMimeType)) {
+        effectiveMimeType =
+            normalizedFile instanceof File ? ((await sniffMimeTypeFromBytes(normalizedFile)) ?? effectiveMimeType) : ((await sniffMimeTypeFromUri(normalizedFile.uri)) ?? effectiveMimeType);
     }
     const fileNameWithExtension = appendExtensionFromMimeType(normalizedFile.name ?? '', effectiveMimeType);
 
