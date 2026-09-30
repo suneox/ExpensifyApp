@@ -101,7 +101,9 @@ export default async function cjsInlineRequiresLoader(source, inputSourceMap) {
                       assumptions: {setPublicClassFields: true, privateFieldsAsProperties: true},
                   }
                 : undefined,
-            module: {type: 'commonjs', lazy: false},
+            // Metro's babel preset lowers node_modules with `strictMode: false`, so dependencies that rely on sloppy mode
+            // (e.g. expo's FormData patch assigning `name` onto a React Native `File`) must not start throwing here.
+            module: {type: 'commonjs', lazy: false, strictMode: !options.hermesLowering},
             sourceMaps,
             inputSourceMap: inputSourceMap ? JSON.stringify(inputSourceMap) : undefined,
         });

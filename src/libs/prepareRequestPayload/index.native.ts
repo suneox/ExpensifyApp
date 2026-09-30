@@ -82,6 +82,10 @@ const prepareRequestPayload: PrepareRequestPayload = (command, data, initiatedOf
                 }); // [102623-DEBUG]
             }
             formData.append(key, value as string | Blob);
+            if (value instanceof Blob) {
+                // eslint-disable-next-line no-console -- [102623-DEBUG] temporary, remove before merge
+                console.log('[102623-DEBUG] append OK', command, key, (value as File).name); // [102623-DEBUG]
+            }
 
             return Promise.resolve();
         });
