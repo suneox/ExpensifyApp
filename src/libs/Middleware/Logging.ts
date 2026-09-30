@@ -163,6 +163,8 @@ const Logging: Middleware = (response, request) => {
                 Log.info('[Network] API request error: The resource was already created', false, logParams);
             } else {
                 // If we get any error that is not known log an alert so we can learn more about it and document it here.
+                // eslint-disable-next-line no-console -- [102623-DEBUG] temporary, remove before merge
+                console.log('[102623-DEBUG] stack', request.command, error instanceof Error ? error.stack : error); // [102623-DEBUG]
                 Log.alert(`${CONST.ERROR.ENSURE_BUG_BOT} unknown API request error caught while processing request`, logParams, false);
             }
 

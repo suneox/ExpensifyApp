@@ -73,6 +73,14 @@ const prepareRequestPayload: PrepareRequestPayload = (command, data, initiatedOf
             }
 
             validateFormDataParameter(command, key, value);
+            if (value instanceof Blob) {
+                // eslint-disable-next-line no-console -- [102623-DEBUG] temporary, remove before merge
+                console.log('[102623-DEBUG] append Blob', command, key, {
+                    ownNameDescriptor: Object.getOwnPropertyDescriptor(value, 'name'),
+                    protoNameHasSetter: !!Object.getOwnPropertyDescriptor(Object.getPrototypeOf(value) as object, 'name')?.set,
+                    isExtensible: Object.isExtensible(value),
+                }); // [102623-DEBUG]
+            }
             formData.append(key, value as string | Blob);
 
             return Promise.resolve();
