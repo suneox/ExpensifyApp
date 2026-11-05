@@ -156,7 +156,9 @@ function useReportActionAvatars({
     const isAInvoiceReport = isInvoiceReport(iouReport ?? null);
 
     const shouldUseActorAccountID = isAInvoiceReport && !isAReportPreviewAction;
-    const accountIDsToMap = shouldUseActorAccountID && actorAccountID ? [actorAccountID] : accountIDs;
+    // A copilot's action is stored under the account they acted for, so it pictures the copilot and leaves that account to the "on behalf of" line.
+    const invoiceActorAccountID = delegatePersonalDetails?.accountID ?? actorAccountID;
+    const accountIDsToMap = shouldUseActorAccountID && invoiceActorAccountID ? [invoiceActorAccountID] : accountIDs;
 
     const avatarsForAccountIDs: IconType[] = accountIDsToMap.map((id) => {
         const invitedEmail = invitedEmailsToAccountIDs ? Object.keys(invitedEmailsToAccountIDs).find((email) => invitedEmailsToAccountIDs[email] === id) : undefined;

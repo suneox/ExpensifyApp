@@ -147,6 +147,53 @@ describe('useReportActionAvatars', () => {
         });
     });
 
+    describe('copilot action inside an invoice report', () => {
+        const mainAccountID = 456;
+        const copilotAccountID = 789;
+
+        beforeEach(async () => {
+            await Onyx.merge(`${ONYXKEYS.COLLECTION.REPORT}${mockInvoiceRoom?.reportID}`, mockInvoiceRoom);
+            await Onyx.merge(`${ONYXKEYS.COLLECTION.REPORT}${mockInvoiceReport?.reportID}`, mockInvoiceReport);
+            await Onyx.merge(`${ONYXKEYS.COLLECTION.POLICY}${mockPolicy?.policyID}`, mockPolicy);
+            await Onyx.merge(ONYXKEYS.PERSONAL_DETAILS_LIST, {
+                [mainAccountID]: {accountID: mainAccountID, displayName: 'Main Account', login: 'main@example.com'},
+                [copilotAccountID]: {accountID: copilotAccountID, displayName: 'Copilot B', login: 'copilot@example.com'},
+            });
+            await waitForBatchedUpdates();
+        });
+
+        afterEach(() => Onyx.clear());
+
+        it('pictures the copilot instead of the account they acted for', async () => {
+            // Given a comment a copilot sent inside an invoice report, which the server stores under the account they acted for
+            const action = createMock<ReportAction>({
+                ...mockReportAction,
+                actionName: CONST.REPORT.ACTIONS.TYPE.ADD_COMMENT,
+                actorAccountID: mainAccountID,
+                delegateAccountID: copilotAccountID,
+            });
+
+            // When the avatars for that comment are resolved
+            const {result} = renderHook(() => useReportActionAvatars({report: mockInvoiceReport, action}), {wrapper});
+            await act(async () => waitForBatchedUpdates());
+
+            // Then the copilot is named and pictured, matching the "on behalf of" line and every other report type
+            expect(result.current.avatars.at(0)).toMatchObject({id: copilotAccountID, name: 'Copilot B'});
+        });
+
+        it('still pictures the author when no copilot is involved', async () => {
+            // Given a comment the account sent itself inside an invoice report
+            const action = createMock<ReportAction>({...mockReportAction, actionName: CONST.REPORT.ACTIONS.TYPE.ADD_COMMENT, actorAccountID: mainAccountID, delegateAccountID: undefined});
+
+            // When the avatars for that comment are resolved
+            const {result} = renderHook(() => useReportActionAvatars({report: mockInvoiceReport, action}), {wrapper});
+            await act(async () => waitForBatchedUpdates());
+
+            // Then the author keeps their own avatar, so the sender/receiver fix from #67879 still holds
+            expect(result.current.avatars.at(0)).toMatchObject({id: mainAccountID, name: 'Main Account'});
+        });
+    });
+
     describe('Concierge thinking message avatar (issue #620352)', () => {
         const conciergeAccountID = CONST.ACCOUNT_ID.CONCIERGE;
         const conciergeAvatarURL = 'https://d2k5nsl2zxldvw.cloudfront.net/images/icons/concierge_2022.png';
