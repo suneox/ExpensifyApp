@@ -16248,17 +16248,16 @@ describe('SearchUIUtils', () => {
             actionName: typeof CONST.REPORT.ACTIONS.TYPE.SUBMITTED | typeof CONST.REPORT.ACTIONS.TYPE.SUBMITTED_AND_CLOSED | typeof CONST.REPORT.ACTIONS.TYPE.ADD_EXPENSE_ON_SUBMITTED,
             violations?: {transactions: Record<string, Array<{name: string}>>},
             reportActionID = 'submit-action-1',
-        ): OnyxTypes.ReportAction =>
-            ({
-                reportActionID,
-                actionName,
-                created: '2025-01-01 00:00:00',
-                originalMessage: {
-                    amount: 1000,
-                    currency: CONST.CURRENCY.USD,
-                    ...(violations ? {violations} : {}),
-                },
-            }) as OnyxTypes.ReportAction;
+        ): OnyxTypes.ReportAction => ({
+            reportActionID,
+            actionName,
+            created: '2025-01-01 00:00:00',
+            originalMessage: {
+                amount: 1000,
+                currency: CONST.CURRENCY.USD,
+                ...(violations ? {violations} : {}),
+            },
+        });
 
         test('returns undefined when reportActions or transactionID is missing', () => {
             expect(SearchUIUtils.getSubmittedViolationsForTransaction(undefined, transactionIDForViolations, translateLocal)).toBeUndefined();
@@ -16470,18 +16469,17 @@ describe('SearchUIUtils', () => {
             actionName: typeof CONST.REPORT.ACTIONS.TYPE.FORWARDED | typeof CONST.REPORT.ACTIONS.TYPE.APPROVED,
             violations?: {transactions: Record<string, Array<{name: string}>>},
             reportActionID = 'approval-action-1',
-        ): OnyxTypes.ReportAction =>
-            ({
-                reportActionID,
-                actionName,
-                created: '2025-01-01 00:00:00',
-                originalMessage: {
-                    amount: 1000,
-                    currency: CONST.CURRENCY.USD,
-                    expenseReportID: '1',
-                    ...(violations ? {violations} : {}),
-                },
-            }) as OnyxTypes.ReportAction;
+        ): OnyxTypes.ReportAction => ({
+            reportActionID,
+            actionName,
+            created: '2025-01-01 00:00:00',
+            originalMessage: {
+                amount: 1000,
+                currency: CONST.CURRENCY.USD,
+                expenseReportID: '1',
+                ...(violations ? {violations} : {}),
+            },
+        });
 
         test('returns undefined when reportActions or transactionID is missing', () => {
             expect(SearchUIUtils.getApprovedViolationsForTransaction(undefined, transactionIDForViolations, translateLocal)).toBeUndefined();
@@ -16634,30 +16632,28 @@ describe('SearchUIUtils', () => {
     describe('getViolationsForTransaction', () => {
         const transactionIDForViolations = 'tx-has-violations-1';
 
-        const createSubmittedAction = (violations?: {transactions: Record<string, Array<{name: string}>>}): OnyxTypes.ReportAction =>
-            ({
-                reportActionID: 'submit-action-1',
-                actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
-                created: '2025-01-01 00:00:00',
-                originalMessage: {
-                    amount: 1000,
-                    currency: CONST.CURRENCY.USD,
-                    ...(violations ? {violations} : {}),
-                },
-            }) as OnyxTypes.ReportAction;
+        const createSubmittedAction = (violations?: {transactions: Record<string, Array<{name: string}>>}): OnyxTypes.ReportAction => ({
+            reportActionID: 'submit-action-1',
+            actionName: CONST.REPORT.ACTIONS.TYPE.SUBMITTED,
+            created: '2025-01-01 00:00:00',
+            originalMessage: {
+                amount: 1000,
+                currency: CONST.CURRENCY.USD,
+                ...(violations ? {violations} : {}),
+            },
+        });
 
-        const createApprovedAction = (violations?: {transactions: Record<string, Array<{name: string}>>}): OnyxTypes.ReportAction =>
-            ({
-                reportActionID: 'approved-action-1',
-                actionName: CONST.REPORT.ACTIONS.TYPE.APPROVED,
-                created: '2025-01-01 00:00:00',
-                originalMessage: {
-                    amount: 1000,
-                    currency: CONST.CURRENCY.USD,
-                    expenseReportID: '1',
-                    ...(violations ? {violations} : {}),
-                },
-            }) as OnyxTypes.ReportAction;
+        const createApprovedAction = (violations?: {transactions: Record<string, Array<{name: string}>>}): OnyxTypes.ReportAction => ({
+            reportActionID: 'approved-action-1',
+            actionName: CONST.REPORT.ACTIONS.TYPE.APPROVED,
+            created: '2025-01-01 00:00:00',
+            originalMessage: {
+                amount: 1000,
+                currency: CONST.CURRENCY.USD,
+                expenseReportID: '1',
+                ...(violations ? {violations} : {}),
+            },
+        });
 
         test('returns undefined when the has filter does not include submitted or approved violation', () => {
             const reportActions = [
@@ -17758,22 +17754,20 @@ describe('Trip search', () => {
     });
 
     it('shows the read-only trip summary only to people outside the trip room', () => {
-        // Given a trip room from the trip search, traveled by 629 and seen by admin 628
-        const tripRoom = buildTrip('1');
-
-        // When the admin isn't in the room, the room would fail its access check
+        // Given a trip room from the trip search, which says whether the current user is in it
+        // When they aren't in the room, the room would fail its access check
         // Then the read-only summary opens instead of the room
-        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(tripRoom, false, 628)).toBe(true);
+        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(buildTrip('1', {isTripRoomMember: false}))).toBe(true);
 
-        // When the admin is in the room, or the traveler opens their own trip
+        // When they are in the room, even as a hidden participant who has to join, or the result doesn't say
         // Then the room opens as usual
-        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(tripRoom, true, 628)).toBe(false);
-        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(tripRoom, false, 629)).toBe(false);
+        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(buildTrip('1', {isTripRoomMember: true}))).toBe(false);
+        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(buildTrip('1'))).toBe(false);
 
         // When the report isn't a trip room from the search results, such as a chat or an expense report
         // Then the report screen opens as usual
-        expect(SearchUIUtils.shouldShowReadOnlyTripSummary({chatType: undefined}, false, 628)).toBe(false);
-        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(undefined, false, 628)).toBe(false);
+        expect(SearchUIUtils.shouldShowReadOnlyTripSummary({chatType: undefined, isTripRoomMember: false})).toBe(false);
+        expect(SearchUIUtils.shouldShowReadOnlyTripSummary(undefined)).toBe(false);
     });
 
     it('keeps the expense rows for a trip search without the beta', () => {

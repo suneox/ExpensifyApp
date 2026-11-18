@@ -2529,15 +2529,9 @@ function getRowCapabilities(allActions: SearchTransactionAction[]): RowCapabilit
  * Whether a report opened from Spend shows the read-only trip summary instead of the trip room. Admins see trips in their workspaces
  * that they aren't in, and the room would fail its access check for them.
  */
-function shouldShowReadOnlyTripSummary(
-    searchTripRoom: Pick<SearchTrip, 'chatType' | 'travelerAccountID'> | undefined,
-    isTripRoomParticipant: boolean,
-    currentUserAccountID: number,
-): boolean {
-    if (searchTripRoom?.chatType !== CONST.REPORT.CHAT_TYPE.TRIP_ROOM) {
-        return false;
-    }
-    return !isTripRoomParticipant && searchTripRoom.travelerAccountID !== currentUserAccountID;
+function shouldShowReadOnlyTripSummary(searchTripRoom: Pick<SearchTrip, 'chatType' | 'isTripRoomMember'> | undefined): boolean {
+    // Older results don't say, so the room opens as before
+    return searchTripRoom?.chatType === CONST.REPORT.CHAT_TYPE.TRIP_ROOM && searchTripRoom.isTripRoomMember === false;
 }
 
 /**
@@ -3175,7 +3169,7 @@ function getReportSections({
                     keyForList: String(reportItem.reportID),
                     groupedBy: CONST.SEARCH.DATA_TYPES.EXPENSE_REPORT,
                     from: (fromDetails ?? emptyPersonalDetails) as OnyxTypes.PersonalDetails,
-                    to: (toDetails ?? emptyPersonalDetails) as OnyxTypes.PersonalDetails,
+                    to: toDetails ?? emptyPersonalDetails,
                     exported: lastExportedActionByReportID.get(reportItem.reportID)?.created ?? '',
                     submitted: getSubmittedDate(reportItem, actions),
                     approved: getApprovedDate(reportItem, actions),
@@ -5156,7 +5150,7 @@ function getSearchColumnTranslationKey(column: SearchSortBy, type?: SearchDataTy
             return 'search.trip.traveler';
         default:
             // This should never happen, but TypeScript requires a default case
-            return 'common.expenses' as TranslationPaths;
+            return 'common.expenses';
     }
 }
 
@@ -7576,7 +7570,7 @@ function getColumnsToShow({
             const result: SearchColumnType[] = [];
 
             for (const col of requiredColumnsSet) {
-                if (!columnsToShow.includes(col as SearchCustomColumnIds)) {
+                if (!columnsToShow.includes(col)) {
                     result.push(col);
                 }
             }
